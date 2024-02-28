@@ -1,0 +1,39 @@
+plugin:
+  name: custom-data-type-doris
+  version: 0.1
+  displayname:
+    de-DE: DoRIS
+    en-US: DoRIS
+  info:
+    de-DE: DoRIS
+    en-US: DoRIS
+  server:
+    api-version:
+      require: 1
+  webfrontend:
+    url: custom-data-type-doris.js
+    css: custom-data-type-doris.css
+  l10n: l10n/custom-data-type-doris.csv
+
+base_url_prefix: "webfrontend"
+
+custom_types:
+  doris:
+    mapping:
+      id:
+        type: text
+      gzAkte:
+        type: text
+
+base_config:
+  - name: doris
+    parameters:
+      url:
+        type: text
+        position: 0
+      account_name:
+        type: text
+        position: 1
+      password:
+        type: text
+        position: 2

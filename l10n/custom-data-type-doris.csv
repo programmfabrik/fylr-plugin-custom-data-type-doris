@@ -1,0 +1,9 @@
+key,de-DE,en-US
+custom.data.type.doris.name,DoRIS,DoRIS
+custom.data.type.doris.buttonMenu.detailInfo,Detailinfo,Detail info
+custom.data.type.doris.buttonMenu.edit,Bearbeiten,Edit
+custom.data.type.doris.buttonMenu.delete,Löschen,Delete
+server.config.name.system.doris,DoRIS,DoRIS
+server.config.parameter.system.doris.url.label,URL,URL
+server.config.parameter.system.doris.account_name.label,Account-Name,Account name
+server.config.parameter.system.doris.password.label,Passwort,Password
