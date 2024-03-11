@@ -2,11 +2,11 @@ var extend = function(child, parent) { for (var key in parent) { if (hasProp.cal
 var hasProp = {}.hasOwnProperty;
 
 var CustomDataTypeDoRIS = (function(superClass) {
-	extend(CustomDataTypeDoRIS, superClass);
+    extend(CustomDataTypeDoRIS, superClass);
 
-	function CustomDataTypeDoRIS() {
-		return CustomDataTypeDoRIS.__super__.constructor.apply(this, arguments);
-	}
+    function CustomDataTypeDoRIS() {
+        return CustomDataTypeDoRIS.__super__.constructor.apply(this, arguments);
+    }
 
     const Plugin = CustomDataTypeDoRIS.prototype;
 
@@ -57,7 +57,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
         } else {
             save_data[this.name()] = {
                 id: data[this.name()].id,
-                gzAkte: data[this.name()].gzAkte
+                typ: data[this.name()].typ
             };
         }
     }
@@ -66,7 +66,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
         const cdata = this.initData(data);
 
         if (this.__isValidData(cdata)) {
-            return new CUI.Label({ text: cdata.gzAkte });
+            return new CUI.Label({ text: this.__getDocumentLabel(cdata) });
         } else {
             return new CUI.EmptyLabel({ text: $$('custom.data.type.doris.edit.invalidEntry') });
         }
@@ -98,7 +98,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
             class: 'ez5-info_commonPlugin',
             top: {
                 content: new CUI.Label({
-                    text: cdata.gzAkte,
+                    text: this.__getDocumentLabel(cdata),
                     multiline: true
                 })
             }
@@ -153,32 +153,32 @@ var CustomDataTypeDoRIS = (function(superClass) {
     Plugin.__getSuggestions = function(searchString) {
         // TODO Fetch suggestions via DoRIS REST API
         const documents = [
-            { id: 'id1', gzAkte: '1.01.01-200' },
-            { id: 'id2', gzAkte: '1.01.01-201' },
-            { id: 'id3', gzAkte: '1.01.01-202' },
-            { id: 'id4', gzAkte: '1.01.01-203' },
-            { id: 'id5', gzAkte: '1.01.01-204' }
+            { id: 'id1', typ: 'Akte' },
+            { id: 'id2', typ: 'Akte' },
+            { id: 'id3', typ: 'Akte' },
+            { id: 'id4', typ: 'Akte' },
+            { id: 'id5', typ: 'Akte' }
         ];
 
         if (!searchString) return [];
 
-        return documents.filter(document => {
-            return document.id.startsWith(searchString) || document.gzAkte.startsWith(searchString);
-        });
+        return documents.filter(document => document.id.startsWith(searchString));
     }
 
     Plugin.__getSuggestionItemList = function(suggestions, cdata, layoutElement, suggestionsMenu) {
         const items = suggestions.map(suggestion => {
-            return { text: suggestion.gzAkte, value: suggestion.id };
+            return {
+                text: this.__getDocumentLabel(suggestion),
+                value: suggestion
+            };
         });
 
         return {
             items,
             keyboardControl: true,
             onClick: (_, button) => {
-                const id = button.getOpt('value');
-                const gzAkte = button.getText();
-                this.__addEntry(id, gzAkte, cdata, layoutElement);
+                const value = button.getOpt('value');
+                this.__addEntry(value.id, value.typ, cdata, layoutElement);
                 suggestionsMenu.hide();
                 layoutElement.replace(this.__getContentElement(cdata, layoutElement), 'center');
             }
@@ -267,18 +267,18 @@ var CustomDataTypeDoRIS = (function(superClass) {
         };
     }
 
-    Plugin.__addEntry = function(id, gzAkte, cdata, layoutElement) {
+    Plugin.__addEntry = function(id, typ, cdata, layoutElement) {
         cdata.id = id;
-        cdata.gzAkte = gzAkte;
-        cdata._fulltext = { text: gzAkte }
-        cdata._standard = { text: gzAkte }
+        cdata.typ = typ;
+        cdata._fulltext = { text: id }
+        cdata._standard = { text: id }
 
         this.__notifyEditor(layoutElement);
     }
 
     Plugin.__deleteEntry = function(cdata, layoutElement) {
         delete cdata.id;
-        delete cdata.gzAkte;
+        delete cdata.typ;
         delete cdata._fulltext;
         delete cdata._standard;
 
@@ -298,7 +298,11 @@ var CustomDataTypeDoRIS = (function(superClass) {
     }
 
     Plugin.__isValidData = function(cdata) {
-        return cdata?.id && cdata?.gzAkte;
+        return cdata?.id && cdata?.typ;
+    }
+
+    Plugin.__getDocumentLabel = function(document) {
+        return document.id + ' (' + document.typ + ')';
     }
 
     return CustomDataTypeDoRIS;
