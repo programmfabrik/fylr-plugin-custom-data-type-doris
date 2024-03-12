@@ -360,7 +360,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
     Plugin.__getActionsMenuItemList = function(cdata, menuElement, layoutElement) {
         return {
             items: [
-                this.__getDetailInfoButton(),
+                this.__getDetailInfoButton(cdata, menuElement),
                 this.__getEditButton(),
                 this.__getDeleteButton(cdata, menuElement, layoutElement)
             ]
@@ -374,15 +374,49 @@ var CustomDataTypeDoRIS = (function(superClass) {
         });
     }
 
-    Plugin.__getDetailInfoButton = function() {
+    Plugin.__getDetailInfoButton = function(cdata, menuElement) {
         return {
             text: $$('custom.data.type.doris.buttonMenu.detailInfo'),
             value: 'detail',
             icon_left: new CUI.Icon({ class: 'fa-info-circle' }),
-            onClick: () => {
-                // TODO Implement
-            }
+            onClick: (_, buttonElement) => this.__openDetailInfoTooltip(cdata, buttonElement, menuElement)
         };
+    }
+
+    Plugin.__openDetailInfoTooltip = function(cdata, buttonElement, menuElement) {
+        const tooltip = new CUI.Tooltip({
+            element: buttonElement,
+            class: 'doris-plugin-detail-info-tooltip',
+            placement: 'w',
+            markdown: true,
+            show_ms: 1000,
+            hide_ms: 200,
+            content: new CUI.Label({ icon: 'spinner', text: $$('custom.data.type.doris.detailInfo.loading') })
+        }).show();
+
+        CUI.Events.listen({
+            type: ['click', 'dblclick', 'mouseout'],
+            node: buttonElement,
+            capture: true,
+            only_once: true,
+            call: () => menuElement.hide()
+        });
+
+        this.__getDetailInfoContent(cdata).then(content => {
+            tooltip.DOM.innerHTML = content;
+            tooltip.autoSize();
+        });
+    }
+
+    Plugin.__getDetailInfoContent = function(cdata) {
+        // TODO Get document information via DoRIS REST API
+
+        return new Promise(resolve => {
+            const content = '<h5>' + cdata.id + '</h5>'
+                + '<div><b>' + $$('custom.data.type.doris.createDocument.field.typ') + ': </b>' + cdata.typ + '</div>';
+
+            resolve(content);
+        });
     }
 
     Plugin.__getEditButton = function() {
