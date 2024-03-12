@@ -6,3 +6,12 @@
   position: relative;
   top: 2px;
 }
+
+.doris-plugin-layout .create-document-button {
+  border-right: 1px solid #ededed !important;
+}
+
+.doris-plugin-modal-pane input {
+  width: 300px;
+  max-width: 300px !important;
+}

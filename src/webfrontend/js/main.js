@@ -77,14 +77,157 @@ var CustomDataTypeDoRIS = (function(superClass) {
 
         const layoutElement = new CUI.HorizontalLayout({
             class: 'customPluginEditorLayout doris-plugin-layout',
+            left: {},
             center: {},
             right: {}
         });
 
-        layoutElement.replace(this.__getContentElement(cdata, layoutElement), 'center');
-        layoutElement.replace(this.__renderActionsButtonBar(cdata, layoutElement), 'right');
+        this.__updateEditorInput(cdata, layoutElement);
 
         return layoutElement;
+    }
+
+    Plugin.__updateEditorInput = function(cdata, layoutElement) {
+        layoutElement.replace(this.__getCreateDocumentButton(cdata, layoutElement), 'left');
+        layoutElement.replace(this.__getContentElement(cdata, layoutElement), 'center');
+        layoutElement.replace(this.__renderActionsButtonBar(cdata, layoutElement), 'right');
+    }
+
+    Plugin.__getCreateDocumentButton = function(cdata, layoutElement) {
+        if (this.__isValidData(cdata)) return undefined;
+        
+        return new CUI.Button({
+            text: '',
+            icon: new CUI.Icon({ class: 'fa-plus' }),
+            class: 'pluginDirectSelectEditSearchFylr create-document-button',
+            onClick: () => this.__openCreateDocumentModal(cdata, layoutElement)
+        });
+    }
+
+    Plugin.__openCreateDocumentModal = function(cdata, layoutElement) {
+        const inputData = { typ: 'Akte' };
+
+        const modal = new CUI.Modal({
+            pane: {
+                content: this.__getCreateDocumentForm(inputData),
+                class: 'doris-plugin-modal-pane',
+                header_left: new CUI.Label({ text: $$('custom.data.type.doris.createDocument.header') }),
+                footer_right: [
+                    new CUI.Button({
+                        text: $$('custom.data.type.doris.createDocument.cancel'),
+                        class: 'cui-dialog',
+                        onClick: () => {
+                            modal.hide();
+                            modal.destroy();
+                        }
+                    }),
+                    new CUI.Button({
+                        text: $$('custom.data.type.doris.createDocument.confirm'),
+                        class: 'cui-dialog',
+                        primary: true,
+                        onClick: () => {
+                            this.__addNewDocument(inputData, cdata, layoutElement).then(() => {
+                                modal.hide();
+                                modal.destroy();
+                            });
+                        }
+                    })
+                ]
+            }
+        });
+
+        modal.autoSize();
+
+        return modal.show();
+    }
+
+    Plugin.__getCreateDocumentForm = function(inputData) {
+        return new CUI.Form({
+            data: inputData,
+            fields: [{
+                type: CUI.Input,
+                name: 'az',
+                form: {
+                    label: $$('custom.data.type.doris.createDocument.field.az')
+                }
+            }, {
+                type: CUI.Input,
+                name: 'gz3',
+                form: {
+                    label: $$('custom.data.type.doris.createDocument.field.gz3'),
+                }
+            }, {
+                type: CUI.Select,
+                name: 'typ',
+                form: {
+                    label: $$('custom.data.type.doris.createDocument.field.typ')
+                },
+                options: [
+                    { text: $$('custom.data.type.doris.createDocument.field.typ.options.default'), value: 'Akte' },
+                    { text: $$('custom.data.type.doris.createDocument.field.typ.options.other'), value: 'Anderer Typ' }
+                ]
+            }, {
+                type: CUI.Input,
+                name: 'content',
+                textarea: true,
+                form: {
+                    label: $$('custom.data.type.doris.createDocument.field.content')
+                }
+            }]
+        }).start();
+    }
+
+    Plugin.__addNewDocument = function(inputData, cdata, layoutElement) {
+        const newDocumentData = this.__buildNewDocumentData(inputData);
+
+        return this.__createDocument(newDocumentData).then(result => {
+            this.__addEntry(result.id, result.typ, cdata, layoutElement);
+        });
+    }
+
+    Plugin.__createDocument = function(newDocumentData) {
+        // TODO Create document via DoRIS REST API
+
+        return new Promise(resolve => {
+            resolve({
+                id: newDocumentData.guid,   // TODO Use ROWNUMBER as id
+                typ: newDocumentData.typ
+            });
+        })
+    }
+
+    Plugin.__buildNewDocumentData = function(inputData) {
+        return {
+            az: inputData.az,
+            gz3: inputData.gz3,
+            gzAkte: inputData.az + '-' + inputData.gz3,
+            typ: inputData.typ,
+            content: inputData.content,
+            guid: this.__createGuid(),
+            creationDate: this.__getCurrentDate(),
+            creationTime: this.__getCurrentTime()
+        };
+    }
+
+    Plugin.__createGuid = function() {
+        return window.crypto.randomUUID().replaceAll('-', '').toUpperCase();
+    }
+
+    Plugin.__getCurrentDate = function() {
+        const date = new Date();
+        return this.__addZeroIfNecessary(date.getDate()) + '.'
+            + this.__addZeroIfNecessary(date.getMonth()) + '.'
+            + date.getFullYear();
+    }
+
+    Plugin.__getCurrentTime = function() {
+        const date = new Date();
+        return this.__addZeroIfNecessary(date.getHours()) + ':'
+            + this.__addZeroIfNecessary(date.getMinutes());
+    }
+
+    Plugin.__addZeroIfNecessary = function(value) {
+        return ('0' + value).slice(-2);
     }
 
     Plugin.__getContentElement = function(cdata, layoutElement) {
@@ -180,7 +323,6 @@ var CustomDataTypeDoRIS = (function(superClass) {
                 const value = button.getOpt('value');
                 this.__addEntry(value.id, value.typ, cdata, layoutElement);
                 suggestionsMenu.hide();
-                layoutElement.replace(this.__getContentElement(cdata, layoutElement), 'center');
             }
         };
     }
@@ -262,7 +404,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
             onClick: () => {
                 this.__deleteEntry(cdata, layoutElement);
                 menuElement.hide();
-                layoutElement.replace(this.__getContentElement(cdata, layoutElement), 'center');
+                this.__updateEditorInput(cdata, layoutElement);
             }
         };
     }
@@ -270,9 +412,10 @@ var CustomDataTypeDoRIS = (function(superClass) {
     Plugin.__addEntry = function(id, typ, cdata, layoutElement) {
         cdata.id = id;
         cdata.typ = typ;
-        cdata._fulltext = { text: id }
-        cdata._standard = { text: id }
+        cdata._fulltext = { text: id };
+        cdata._standard = { text: id };
 
+        this.__updateEditorInput(cdata, layoutElement);
         this.__notifyEditor(layoutElement);
     }
 
