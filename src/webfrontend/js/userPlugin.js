@@ -22,21 +22,21 @@ var UserPluginDoRIS = (function(superClass) {
 						type: CUI.Input,
 						name: 'doris_username',
 						form: {
-							label: 'Username',
-							hint: 'Der Username des DoRIS-Accounts'
+							label: $$('userPlugin.doris.username.label'),
+							hint: $$('userPlugin.doris.username.hint')
                         }
                     }, {
 						type: CUI.Input,
 						name: 'doris_password',
 						form: {
-							label: 'Passwort',
-							hint: 'Das Passwort des DoRIS-Accounts'
+							label: $$('userPlugin.doris.password.label'),
+							hint: $$('userPlugin.doris.password.hint')
                         }
                     }]
                 });
 				return form.start();
             }
-        })
+        });
     }
 
 	Plugin.getSaveData = function(saveData) {

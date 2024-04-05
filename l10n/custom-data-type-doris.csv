@@ -14,5 +14,9 @@ custom.data.type.doris.createDocument.header,Neue DoRIS-Akte anlegen,Create new 
 custom.data.type.doris.createDocument.confirm,Erstellen,Create
 custom.data.type.doris.createDocument.cancel,Abbrechen,Cancel
 custom.data.type.doris.detailInfo.loading,Lade Informationen,Loading information
+userPlugin.doris.username.label,Username,User name
+userPlugin.doris.username.hint,Der Username des DoRIS-Accounts,The user name of the DoRIS account
+userPlugin.doris.password.label,Passwort,Password
+userPlugin.doris.password.hint,Das Passwort des DoRIS-Accounts,The password of the DoRIS account
 server.config.name.system.doris,DoRIS,DoRIS
 server.config.parameter.system.doris.url.label,URL,URL
