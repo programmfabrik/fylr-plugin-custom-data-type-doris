@@ -148,30 +148,30 @@ var CustomDataTypeDoRIS = (function(superClass) {
                 type: CUI.Input,
                 name: 'az',
                 form: {
-                    label: $$('custom.data.type.doris.createDocument.field.az')
+                    label: $$('custom.data.type.doris.field.az')
                 }
             }, {
                 type: CUI.Input,
                 name: 'gz3',
                 form: {
-                    label: $$('custom.data.type.doris.createDocument.field.gz3'),
+                    label: $$('custom.data.type.doris.field.gz3'),
                 }
             }, {
                 type: CUI.Select,
                 name: 'typ',
                 form: {
-                    label: $$('custom.data.type.doris.createDocument.field.typ')
+                    label: $$('custom.data.type.doris.field.typ')
                 },
                 options: [
-                    { text: $$('custom.data.type.doris.createDocument.field.typ.options.default'), value: 'Akte' },
-                    { text: $$('custom.data.type.doris.createDocument.field.typ.options.other'), value: 'Anderer Typ' }
+                    { text: $$('custom.data.type.doris.field.typ.options.default'), value: 'Akte' },
+                    { text: $$('custom.data.type.doris.field.typ.options.other'), value: 'Anderer Typ' }
                 ]
             }, {
                 type: CUI.Input,
                 name: 'content',
                 textarea: true,
                 form: {
-                    label: $$('custom.data.type.doris.createDocument.field.content')
+                    label: $$('custom.data.type.doris.field.content')
                 }
             }]
         }).start();
@@ -409,13 +409,18 @@ var CustomDataTypeDoRIS = (function(superClass) {
     }
 
     Plugin.__getDetailInfoContent = function(cdata) {
-        // TODO Get document information via DoRIS REST API
-
         return new Promise(resolve => {
-            const content = '<h5>' + cdata.id + '</h5>'
-                + '<div><b>' + $$('custom.data.type.doris.createDocument.field.typ') + ': </b>' + cdata.typ + '</div>';
+            this.__getDetailInfoData(cdata.id).then(data => {
+                const content = '<h5>DoRIS:' + cdata.id + '</h5>'
+                + '<div><b>' + $$('custom.data.type.doris.field.typ') + ': </b>'
+                    + cdata.typ + '</div>'
+                + '<div><b>' + $$('custom.data.type.doris.field.lastChangeDate') + ': </b>'
+                    + data.lastChangeDate + '</div>'
+                + '<div><b>' + $$('custom.data.type.doris.field.content') + ': </b>'
+                    + data.content + '</div>'
 
-            resolve(content);
+                resolve(content);
+            });
         });
     }
 
@@ -480,6 +485,17 @@ var CustomDataTypeDoRIS = (function(superClass) {
 
     Plugin.__getDocumentLabel = function(document) {
         return document.id + ' (' + document.typ + ')';
+    }
+
+    Plugin.__getDetailInfoData = function(id) {
+         // TODO Get document information via DoRIS REST API
+
+        return new Promise(resolve => {
+            resolve({
+                content: 'Example',
+                lastChangeDate: '14.09.2023'
+            });
+        });
     }
 
     return CustomDataTypeDoRIS;

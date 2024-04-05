@@ -19,3 +19,11 @@
 .doris-plugin-detail-info-tooltip {
   padding: 10px;
 }
+
+.doris-plugin-detail-info-tooltip div:not(:last-child) {
+  margin-bottom: 10px;
+}
+
+.doris-plugin-detail-info-tooltip b {
+  display: block;
+}
