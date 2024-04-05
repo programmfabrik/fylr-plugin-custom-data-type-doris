@@ -1,9 +1,6 @@
 ZIP_NAME ?= "CustomDataTypeDoRIS.zip"
 PLUGIN_NAME = custom-data-type-doris
 
-MAIN_JS = src/webfrontend/js/main.js
-MAIN_CSS = src/webfrontend/css/main.css
-
 all: build zip
 
 build: clean
@@ -13,8 +10,9 @@ build: clean
 	mkdir -p build/$(PLUGIN_NAME)/server
 	mkdir -p build/$(PLUGIN_NAME)/l10n
 
-	cp $(MAIN_JS) build/$(PLUGIN_NAME)/webfrontend/$(PLUGIN_NAME).js
-	cp $(MAIN_CSS) build/$(PLUGIN_NAME)/webfrontend/${PLUGIN_NAME}.css
+	cp src/webfrontend/js/customDataType.js build/$(PLUGIN_NAME)/webfrontend/$(PLUGIN_NAME).js
+	cat src/webfrontend/js/userPlugin.js >> build/$(PLUGIN_NAME)/webfrontend/${PLUGIN_NAME}.js
+	cp src/webfrontend/css/main.css build/$(PLUGIN_NAME)/webfrontend/${PLUGIN_NAME}.css
 	cp l10n/$(PLUGIN_NAME).csv build/$(PLUGIN_NAME)/l10n/$(PLUGIN_NAME).csv
 
 	cp manifest.master.yml build/$(PLUGIN_NAME)/manifest.yml
