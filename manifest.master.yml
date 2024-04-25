@@ -31,9 +31,3 @@ base_config:
       url:
         type: text
         position: 0
-      account_name:
-        type: text
-        position: 1
-      password:
-        type: text
-        position: 2
