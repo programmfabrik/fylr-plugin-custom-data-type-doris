@@ -82,13 +82,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
             right: {}
         });
 
-        const dorisConfiguration = {
-            url: 'https://www.example.de/',
-            username: 'User',
-            password: 'Passwort'
-        };
-
-        this.__updateEditorInput(cdata, layoutElement, dorisConfiguration);
+        this.__updateEditorInput(cdata, layoutElement, this.__getDoRISConfiguration());
 
         return layoutElement;
     };
@@ -628,6 +622,24 @@ var CustomDataTypeDoRIS = (function(superClass) {
             return undefined;
         });
     };
+
+    Plugin.__getDoRISConfiguration = function() {
+        const userConfiguration = ez5.session.user.opts.user.user.custom_data;
+        const baseConfiguration = this.__getBaseConfiguration();
+
+        let url = baseConfiguration.url;
+        if (!url.endsWith('/')) url += '/';
+
+        return {
+            username: userConfiguration.doris_username,
+            password: userConfiguration.doris_password,
+            url
+        }
+    }
+
+    Plugin.__getBaseConfiguration = function () {
+        return ez5.session.getBaseConfig('plugin', 'custom-data-type-doris')['doris'];
+    }
 
     return CustomDataTypeDoRIS;
 })(CustomDataType);
