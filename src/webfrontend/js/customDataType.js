@@ -537,7 +537,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
             if (!newDocumentValues) throw 'Reading new document from DoRIS failed!';
             return {
                 id: newDocumentValues[0],
-                type: newDocumentData.type
+                type: newDocumentData.type.name
             };
         }).catch(err => {
             console.error(err);
