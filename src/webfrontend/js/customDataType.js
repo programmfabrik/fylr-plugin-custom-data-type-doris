@@ -388,7 +388,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
         return {
             items: [
                 this.__getDetailInfoButton(cdata, menuElement),
-                this.__getEditButton(),
+                this.__getEditButton(cdata, dorisConfiguration),
                 this.__getDeleteButton(data, cdata, menuElement, layoutElement, dorisConfiguration)
             ]
         };
@@ -451,13 +451,15 @@ var CustomDataTypeDoRIS = (function(superClass) {
         });
     };
 
-    Plugin.__getEditButton = function() {
+    Plugin.__getEditButton = function(cdata, dorisConfiguration) {
+        const editUrl = dorisConfiguration.url + 'DA/jsp/index.jsp?View=ListView&RowNumber=' + cdata.id;
+
         return {
             text: $$('custom.data.type.doris.buttonMenu.edit'),
             value: 'edit',
             icon_left: new CUI.Icon({ class: 'fa-pencil' }),
             onClick: () => {
-                // TODO Implement
+                window.open(editUrl, '_blank');
             }
         };
     };
