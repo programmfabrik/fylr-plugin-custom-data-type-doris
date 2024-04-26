@@ -20,3 +20,7 @@ userPlugin.doris.password.label,Passwort,Password
 userPlugin.doris.password.hint,Das Passwort des DoRIS-Accounts,The password of the DoRIS account
 server.config.name.system.doris,DoRIS,DoRIS
 server.config.parameter.system.doris.url.label,URL,URL
+server.config.parameter.system.doris.types.label,Typen,Types
+server.config.parameter.system.doris.types.id.label,ID,ID
+server.config.parameter.system.doris.types.name.label,Name,Name
+server.config.parameter.system.doris.types.organization_unit.label,Organisationseinheit,Organization unit

@@ -105,7 +105,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
     };
 
     Plugin.__openCreateDocumentModal = function(cdata, layoutElement, dorisConfiguration) {
-        const types = this.__getTypes();
+        const types = this.__getBaseConfiguration().types;
         const inputData = { type: types[0].id };
 
         const modal = new CUI.Modal({
@@ -156,14 +156,6 @@ var CustomDataTypeDoRIS = (function(superClass) {
             }]
         }).start();
     };
-
-    Plugin.__getTypes = function() {
-        // TODO Fetch from configuration
-        return [
-            { name: 'Objektakte', id: '12345', oe: 'A1' },
-            { name: 'Andere Akte', id: '23456', oe: 'A2' }
-        ];
-    }
 
     Plugin.__addNewDocument = function(type,  cdata,  layoutElement, dorisConfiguration) {
         const newDocumentData = this.__buildNewDocumentData(type);
@@ -560,7 +552,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
             TYP: 'Akte',
             AKTENTYP: documentData.type.name,
             AKTEINH: documentData.content,
-            OE: documentData.type.oe,
+            OE: documentData.type.organization_unit,
             AUSBLEND: 'N',
             FORTSETZ: 'N',
             NACHGJN: 'N',

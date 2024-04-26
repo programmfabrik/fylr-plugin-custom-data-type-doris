@@ -31,3 +31,16 @@ base_config:
       url:
         type: text
         position: 0
+      types:
+        type: table
+        fields:
+          - name: id
+            type: text
+            position: 0
+          - name: name
+            type: text
+            position: 1
+          - name: organization_unit
+            type: text
+            position: 2
+        position: 1
