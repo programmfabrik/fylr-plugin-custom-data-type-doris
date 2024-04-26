@@ -82,29 +82,29 @@ var CustomDataTypeDoRIS = (function(superClass) {
             right: {}
         });
 
-        this.__updateEditorInput(cdata, layoutElement, this.__getDoRISConfiguration());
+        this.__updateEditorInput(data, cdata, layoutElement, this.__getDoRISConfiguration());
 
         return layoutElement;
     };
 
-    Plugin.__updateEditorInput = function(cdata, layoutElement, dorisConfiguration) {
-        layoutElement.replace(this.__getCreateDocumentButton(cdata, layoutElement, dorisConfiguration), 'left');
-        layoutElement.replace(this.__getContentElement(cdata, layoutElement), 'center');
-        layoutElement.replace(this.__renderActionsButtonBar(cdata, layoutElement, dorisConfiguration), 'right');
+    Plugin.__updateEditorInput = function(data, cdata, layoutElement, dorisConfiguration) {
+        layoutElement.replace(this.__getCreateDocumentButton(data, cdata, layoutElement, dorisConfiguration), 'left');
+        layoutElement.replace(this.__getContentElement(data, cdata, layoutElement), 'center');
+        layoutElement.replace(this.__renderActionsButtonBar(data, cdata, layoutElement, dorisConfiguration), 'right');
     };
 
-    Plugin.__getCreateDocumentButton = function(cdata, layoutElement, dorisConfiguration) {
+    Plugin.__getCreateDocumentButton = function(data, cdata, layoutElement, dorisConfiguration) {
         if (this.__isValidData(cdata)) return undefined;
         
         return new CUI.Button({
             text: '',
             icon: new CUI.Icon({ class: 'fa-plus' }),
             class: 'pluginDirectSelectEditSearchFylr create-document-button',
-            onClick: () => this.__openCreateDocumentModal(cdata, layoutElement, dorisConfiguration)
+            onClick: () => this.__openCreateDocumentModal(data, cdata, layoutElement, dorisConfiguration)
         });
     };
 
-    Plugin.__openCreateDocumentModal = function(cdata, layoutElement, dorisConfiguration) {
+    Plugin.__openCreateDocumentModal = function(data, cdata, layoutElement, dorisConfiguration) {
         const types = this.__getBaseConfiguration().types;
         const inputData = { type: types[0].id };
 
@@ -128,7 +128,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
                         primary: true,
                         onClick: () => {
                             const selectedType = types.find(type => inputData.type === type.id);
-                            this.__addNewDocument(selectedType, cdata, layoutElement, dorisConfiguration).then(() => {
+                            this.__addNewDocument(selectedType, data, cdata, layoutElement, dorisConfiguration).then(() => {
                                 modal.hide();
                                 modal.destroy();
                             });
@@ -157,23 +157,83 @@ var CustomDataTypeDoRIS = (function(superClass) {
         }).start();
     };
 
-    Plugin.__addNewDocument = function(type,  cdata,  layoutElement, dorisConfiguration) {
-        const newDocumentData = this.__buildNewDocumentData(type);
+    Plugin.__addNewDocument = function(type, data, cdata, layoutElement, dorisConfiguration) {
+        return this.__buildNewDocumentData(type, data)
+            .then(newDocumentData => {
+                return this.__createDocument(newDocumentData, dorisConfiguration);
+            }).then(result => {
+                if (result) this.__addEntry(result.id, result.type, data, cdata, layoutElement, dorisConfiguration);
+            });
+    };
 
-        return this.__createDocument(newDocumentData, dorisConfiguration).then(result => {
-            if (result) this.__addEntry(result.id,  result.typ,  cdata,  layoutElement, dorisConfiguration);
+    Plugin.__buildNewDocumentData = function(type, data) {
+        return this.__getNewDocumentContent(data).then(content => {
+            return {
+                type,
+                content,
+                guid: this.__createGuid(),
+                creationYear: new Date().getFullYear().toString(),
+                creationDate: this.__getCurrentDate(),
+                creationTime: this.__getCurrentTime()
+            };
         });
     };
 
-    Plugin.__buildNewDocumentData = function(type) {
-        return {
-            type,
-            content: '',
-            guid: this.__createGuid(),
-            creationYear: new Date().getFullYear().toString(),
-            creationDate: this.__getCurrentDate(),
-            creationTime: this.__getCurrentTime()
-        };
+    Plugin.__getNewDocumentContent = function(data) {
+        return this.__getRegion(data).then(region => {
+            const cityDistrict = this.__getListValueFromObjectData(
+                data, '_nested:item__politische_zugehoerigkeit', 'stadtteil'
+            );
+            const street = this.__getListValueFromObjectData(data, '_nested:item__anschrift', 'strasse');
+            const buildingNumber = this.__getListValueFromObjectData(data, '_nested:item__anschrift', 'hausnummer');
+            const type = data.lk_objekttyp?.conceptName;
+            const title = this.__getListValueFromObjectData(data, '_nested:item__titel', 'titel');
+
+            if (!region || !street || !buildingNumber || !type || !title) {
+                throw 'Missing object information!';
+            }
+
+            return region + ', '
+                + cityDistrict + ', '
+                + street + ' ' + buildingNumber + ', ' 
+                + type + ', '
+                + title;
+        });
+    };
+
+    Plugin.__getRegion = function(data) {
+        const danteEntry = this.__getListValueFromObjectData(
+            data, '_nested:item__politische_zugehoerigkeit', 'lk_politische_zugehoerigkeit'
+        );
+
+        return this.__getDanteConcept(danteEntry?.conceptURI).then(danteConcept => {
+            return this.__getDanteConceptLabel(danteConcept);
+        });
+    };
+
+    Plugin.__getListValueFromObjectData = function(data, fieldName, subfieldName) {
+        return data[fieldName]?.length
+            ? data[fieldName][0][subfieldName]
+            : undefined;
+    };
+
+    Plugin.__getDanteConcept = function(danteURI) {
+        if (!danteURI) return Promise.resolve(undefined);
+
+        const url = 'http://api.dante.gbv.de/data?uri=' + danteURI;
+        return this.__performGetRequest(url).then(result => {
+            return result.length ? result[0] : Promise.resolve(undefined);
+        });
+    };
+
+    Plugin.__getDanteConceptLabel = function(danteConcept) {
+        if (!danteConcept) return Promise.resolve(undefined);
+
+        if (danteConcept.altLabel?.['de'] && danteConcept.altLabel['de'].length) {
+            return danteConcept.altLabel['de'][0];
+        } else {
+            return danteConcept.prefLabel?.['de'];
+        }
     };
 
     Plugin.__createGuid = function() {
@@ -197,10 +257,10 @@ var CustomDataTypeDoRIS = (function(superClass) {
         return ('0' + value).slice(-2);
     };
 
-    Plugin.__getContentElement = function(cdata, layoutElement) {
+    Plugin.__getContentElement = function(data, cdata, layoutElement) {
         return cdata?.id
             ? this.__renderDocumentInfo(cdata)
-            : this.__renderInputField(cdata, layoutElement);
+            : this.__renderInputField(data, cdata, layoutElement);
     };
 
     Plugin.__renderDocumentInfo = function(cdata) {
@@ -215,14 +275,14 @@ var CustomDataTypeDoRIS = (function(superClass) {
         });
     };
 
-    Plugin.__renderInputField = function(cdata, layoutElement) {
+    Plugin.__renderInputField = function(data, cdata, layoutElement) {
         const inputElement = new CUI.Input({
             name: 'directSelectInput',
             class: 'pluginDirectSelectEditInput',
             undo_and_changed_support: false,
             content_size: false,
             onKeyup: input => {
-                this.__triggerSuggestionsUpdate(suggestionsMenu, input.getValueForInput(), cdata, layoutElement);
+                this.__triggerSuggestionsUpdate(suggestionsMenu, input.getValueForInput(), data, cdata, layoutElement);
             }
         });
 
@@ -239,20 +299,20 @@ var CustomDataTypeDoRIS = (function(superClass) {
         });
     };
 
-    Plugin.__triggerSuggestionsUpdate = function(suggestionsMenu, searchString, cdata, layoutElement) {
+    Plugin.__triggerSuggestionsUpdate = function(suggestionsMenu, searchString, data, cdata, layoutElement) {
         if (this.currentTimeout) clearTimeout(this.currentTimeout);
         this.currentTimeout = setTimeout(() => {
-            this.__updateSuggestionsMenu(suggestionsMenu, searchString, cdata, layoutElement);
+            this.__updateSuggestionsMenu(suggestionsMenu, searchString, data, cdata, layoutElement);
             this.currentTimeout = undefined;
         }, 500);
     };
 
-    Plugin.__updateSuggestionsMenu = function(suggestionsMenu, searchString, cdata, layoutElement) {
+    Plugin.__updateSuggestionsMenu = function(suggestionsMenu, searchString, data, cdata, layoutElement) {
         const suggestions = this.__getSuggestions(searchString);
 
         if (suggestions.length > 0) {
             suggestionsMenu.setItemList(
-                this.__getSuggestionItemList(suggestions, cdata, layoutElement, suggestionsMenu)
+                this.__getSuggestionItemList(suggestions, data, cdata, layoutElement, suggestionsMenu)
             );
             suggestionsMenu.show();
         } else {
@@ -275,7 +335,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
         return documents.filter(document => document.id.startsWith(searchString));
     };
 
-    Plugin.__getSuggestionItemList = function(suggestions, cdata, layoutElement, suggestionsMenu) {
+    Plugin.__getSuggestionItemList = function(suggestions, data, cdata, layoutElement, suggestionsMenu) {
         const items = suggestions.map(suggestion => {
             return {
                 text: this.__getDocumentLabel(suggestion),
@@ -288,19 +348,19 @@ var CustomDataTypeDoRIS = (function(superClass) {
             keyboardControl: true,
             onClick: (_, button) => {
                 const value = button.getOpt('value');
-                this.__addEntry(value.id, value.typ, cdata, layoutElement);
+                this.__addEntry(value.id, value.typ, data, cdata, layoutElement);
                 suggestionsMenu.hide();
             }
         };
     };
 
-    Plugin.__renderActionsButtonBar = function(cdata, layoutElement, dorisConfiguration) {
+    Plugin.__renderActionsButtonBar = function(data, cdata, layoutElement, dorisConfiguration) {
         return new CUI.Buttonbar({
-            buttons: [this.__renderActionsButton(cdata, layoutElement, dorisConfiguration)]
+            buttons: [this.__renderActionsButton(data, cdata, layoutElement, dorisConfiguration)]
         });
     };
 
-    Plugin.__renderActionsButton = function(cdata, layoutElement, dorisConfiguration) {
+    Plugin.__renderActionsButton = function(data, cdata, layoutElement, dorisConfiguration) {
         const menuButtonElement = new CUI.Button({
             text: '',
             icon: new CUI.Icon({ class: 'fa-ellipsis-v' }),
@@ -308,28 +368,28 @@ var CustomDataTypeDoRIS = (function(superClass) {
             onClick: () => this.__openActionsMenu(cdata, menuElement)
         });
 
-        const menuElement = this.__getActionsMenu(cdata, menuButtonElement, layoutElement, dorisConfiguration);
+        const menuElement = this.__getActionsMenu(data, cdata, menuButtonElement, layoutElement, dorisConfiguration);
 
         return menuButtonElement;
     };
 
-    Plugin.__getActionsMenu = function(cdata, menuButtonElement, layoutElement, dorisConfiguration) {
+    Plugin.__getActionsMenu = function(data, cdata, menuButtonElement, layoutElement, dorisConfiguration) {
         const menuElement = new CUI.Menu({
             class: 'customDataTypeCommonsMenu',
             element: menuButtonElement
         });
 
         menuElement._auto_close_after_click = false;
-        menuElement.setItemList(this.__getActionsMenuItemList(cdata, menuElement, layoutElement, dorisConfiguration));
+        menuElement.setItemList(this.__getActionsMenuItemList(data, cdata, menuElement, layoutElement, dorisConfiguration));
         return menuElement;
     };
 
-    Plugin.__getActionsMenuItemList = function(cdata, menuElement, layoutElement, dorisConfiguration) {
+    Plugin.__getActionsMenuItemList = function(data, cdata, menuElement, layoutElement, dorisConfiguration) {
         return {
             items: [
                 this.__getDetailInfoButton(cdata, menuElement),
                 this.__getEditButton(),
-                this.__getDeleteButton(cdata, menuElement, layoutElement, dorisConfiguration)
+                this.__getDeleteButton(data, cdata, menuElement, layoutElement, dorisConfiguration)
             ]
         };
     };
@@ -402,7 +462,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
         };
     };
 
-    Plugin.__getDeleteButton = function(cdata, menuElement, layoutElement, dorisConfiguration) {
+    Plugin.__getDeleteButton = function(data, cdata, menuElement, layoutElement, dorisConfiguration) {
         return {
             text: $$('custom.data.type.doris.buttonMenu.delete'),
             value: 'delete',
@@ -410,18 +470,18 @@ var CustomDataTypeDoRIS = (function(superClass) {
             onClick: () => {
                 this.__deleteEntry(cdata, layoutElement);
                 menuElement.hide();
-                this.__updateEditorInput(cdata, layoutElement, dorisConfiguration);
+                this.__updateEditorInput(data, cdata, layoutElement, dorisConfiguration);
             }
         };
     };
 
-    Plugin.__addEntry = function(id, typ, cdata, layoutElement, dorisConfiguration) {
+    Plugin.__addEntry = function(id, typ, data, cdata, layoutElement, dorisConfiguration) {
         cdata.id = id;
         cdata.typ = typ;
         cdata._fulltext = { text: id };
         cdata._standard = { text: id };
 
-        this.__updateEditorInput(cdata, layoutElement, dorisConfiguration);
+        this.__updateEditorInput(data, cdata, layoutElement, dorisConfiguration);
         this.__notifyEditor(layoutElement);
     };
 
@@ -477,7 +537,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
             if (!newDocumentValues) throw 'Reading new document from DoRIS failed!';
             return {
                 id: newDocumentValues[0],
-                typ: newDocumentData.typ
+                type: newDocumentData.type
             };
         }).catch(err => {
             console.error(err);
@@ -542,7 +602,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
         return this.__performGetRequest(url);
     };
 
-    Plugin.__addDoRISDocument = function(documentData,  dorisConfiguration) {
+    Plugin.__addDoRISDocument = function(documentData, dorisConfiguration) {
         const fields = {
             GUID: documentData.guid,
             AZ: documentData.type.id,
@@ -581,9 +641,6 @@ var CustomDataTypeDoRIS = (function(superClass) {
     Plugin.__performGetRequest = function(url) {
         return fetch(url, {
             method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            }
         }).then(response => {
             if (!response.ok) {
                 console.error(response.status);
