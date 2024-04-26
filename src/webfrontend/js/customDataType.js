@@ -12,11 +12,11 @@ var CustomDataTypeDoRIS = (function(superClass) {
 
     Plugin.getCustomDataTypeName = function() {
         return 'custom:base.custom-data-type-doris.doris';
-    }
+    };
 
     Plugin.getCustomDataTypeNameLocalized = function() {
         return $$('custom.data.type.doris.name');
-    }
+    };
 
     Plugin.isEmpty = function(data, top_level_data, opts={}) {
         if (data[this.name()]?.id) {
@@ -24,11 +24,11 @@ var CustomDataTypeDoRIS = (function(superClass) {
         } else {
             return true;
         }
-    }
+    };
 
     Plugin.getCustomDataOptionsInDatamodelInfo = function(custom_settings) {
         return [];
-    }
+    };
 
     Plugin.initData = function(data) {
         let cdata;
@@ -41,15 +41,15 @@ var CustomDataTypeDoRIS = (function(superClass) {
         }
 
         return cdata;
-    }
+    };
 
     Plugin.renderFieldAsGroup = function(data, top_level_data, opts) {
         return false;
-    }
+    };
 
     Plugin.supportsFacet = function() {
         return false;
-    }
+    };
 
     Plugin.getSaveData = function(data, save_data, opts = {}) {
         if (this.isEmpty(data)) {
@@ -60,7 +60,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
                 typ: data[this.name()].typ
             };
         }
-    }
+    };
 
     Plugin.renderDetailOutput = function(data, top_level_data, opts) {
         const cdata = this.initData(data);
@@ -70,7 +70,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
         } else {
             return new CUI.EmptyLabel({ text: $$('custom.data.type.doris.edit.invalidEntry') });
         }
-    }
+    };
 
     Plugin.renderEditorInput = function(data, top_level_data, opts) {
         const cdata = this.initData(data);
@@ -82,34 +82,41 @@ var CustomDataTypeDoRIS = (function(superClass) {
             right: {}
         });
 
-        this.__updateEditorInput(cdata, layoutElement);
+        const dorisConfiguration = {
+            url: 'https://www.example.de/',
+            username: 'User',
+            password: 'Passwort'
+        };
+
+        this.__updateEditorInput(cdata, layoutElement, dorisConfiguration);
 
         return layoutElement;
-    }
+    };
 
-    Plugin.__updateEditorInput = function(cdata, layoutElement) {
-        layoutElement.replace(this.__getCreateDocumentButton(cdata, layoutElement), 'left');
+    Plugin.__updateEditorInput = function(cdata, layoutElement, dorisConfiguration) {
+        layoutElement.replace(this.__getCreateDocumentButton(cdata, layoutElement, dorisConfiguration), 'left');
         layoutElement.replace(this.__getContentElement(cdata, layoutElement), 'center');
-        layoutElement.replace(this.__renderActionsButtonBar(cdata, layoutElement), 'right');
-    }
+        layoutElement.replace(this.__renderActionsButtonBar(cdata, layoutElement, dorisConfiguration), 'right');
+    };
 
-    Plugin.__getCreateDocumentButton = function(cdata, layoutElement) {
+    Plugin.__getCreateDocumentButton = function(cdata, layoutElement, dorisConfiguration) {
         if (this.__isValidData(cdata)) return undefined;
         
         return new CUI.Button({
             text: '',
             icon: new CUI.Icon({ class: 'fa-plus' }),
             class: 'pluginDirectSelectEditSearchFylr create-document-button',
-            onClick: () => this.__openCreateDocumentModal(cdata, layoutElement)
+            onClick: () => this.__openCreateDocumentModal(cdata, layoutElement, dorisConfiguration)
         });
-    }
+    };
 
-    Plugin.__openCreateDocumentModal = function(cdata, layoutElement) {
-        const inputData = { typ: 'Akte' };
+    Plugin.__openCreateDocumentModal = function(cdata, layoutElement, dorisConfiguration) {
+        const types = this.__getTypes();
+        const inputData = { type: types[0].id };
 
         const modal = new CUI.Modal({
             pane: {
-                content: this.__getCreateDocumentForm(inputData),
+                content: this.__getCreateDocumentForm(types, inputData),
                 class: 'doris-plugin-modal-pane',
                 header_left: new CUI.Label({ text: $$('custom.data.type.doris.createDocument.header') }),
                 footer_right: [
@@ -126,7 +133,8 @@ var CustomDataTypeDoRIS = (function(superClass) {
                         class: 'cui-dialog',
                         primary: true,
                         onClick: () => {
-                            this.__addNewDocument(inputData, cdata, layoutElement).then(() => {
+                            const selectedType = types.find(type => inputData.type === type.id);
+                            this.__addNewDocument(selectedType, cdata, layoutElement, dorisConfiguration).then(() => {
                                 modal.hide();
                                 modal.destroy();
                             });
@@ -139,102 +147,75 @@ var CustomDataTypeDoRIS = (function(superClass) {
         modal.autoSize();
 
         return modal.show();
-    }
+    };
 
-    Plugin.__getCreateDocumentForm = function(inputData) {
+    Plugin.__getCreateDocumentForm = function(types, inputData) {
         return new CUI.Form({
             data: inputData,
             fields: [{
-                type: CUI.Input,
-                name: 'az',
-                form: {
-                    label: $$('custom.data.type.doris.field.az')
-                }
-            }, {
-                type: CUI.Input,
-                name: 'gz3',
-                form: {
-                    label: $$('custom.data.type.doris.field.gz3'),
-                }
-            }, {
                 type: CUI.Select,
-                name: 'typ',
+                name: 'type',
                 form: {
                     label: $$('custom.data.type.doris.field.typ')
                 },
-                options: [
-                    { text: $$('custom.data.type.doris.field.typ.options.default'), value: 'Akte' },
-                    { text: $$('custom.data.type.doris.field.typ.options.other'), value: 'Anderer Typ' }
-                ]
-            }, {
-                type: CUI.Input,
-                name: 'content',
-                textarea: true,
-                form: {
-                    label: $$('custom.data.type.doris.field.content')
-                }
+                options: types.map(type => { return { text: type.name, value: type.id }; })
             }]
         }).start();
+    };
+
+    Plugin.__getTypes = function() {
+        // TODO Fetch from configuration
+        return [
+            { name: 'Objektakte', id: '12345', oe: 'A1' },
+            { name: 'Andere Akte', id: '23456', oe: 'A2' }
+        ];
     }
 
-    Plugin.__addNewDocument = function(inputData, cdata, layoutElement) {
-        const newDocumentData = this.__buildNewDocumentData(inputData);
+    Plugin.__addNewDocument = function(type,  cdata,  layoutElement, dorisConfiguration) {
+        const newDocumentData = this.__buildNewDocumentData(type);
 
-        return this.__createDocument(newDocumentData).then(result => {
-            this.__addEntry(result.id, result.typ, cdata, layoutElement);
+        return this.__createDocument(newDocumentData, dorisConfiguration).then(result => {
+            if (result) this.__addEntry(result.id,  result.typ,  cdata,  layoutElement, dorisConfiguration);
         });
-    }
+    };
 
-    Plugin.__createDocument = function(newDocumentData) {
-        // TODO Create document via DoRIS REST API
-
-        return new Promise(resolve => {
-            resolve({
-                id: newDocumentData.guid,   // TODO Use ROWNUMBER as id
-                typ: newDocumentData.typ
-            });
-        })
-    }
-
-    Plugin.__buildNewDocumentData = function(inputData) {
+    Plugin.__buildNewDocumentData = function(type) {
         return {
-            az: inputData.az,
-            gz3: inputData.gz3,
-            gzAkte: inputData.az + '-' + inputData.gz3,
-            typ: inputData.typ,
-            content: inputData.content,
+            type,
+            content: '',
             guid: this.__createGuid(),
+            creationYear: new Date().getFullYear().toString(),
             creationDate: this.__getCurrentDate(),
             creationTime: this.__getCurrentTime()
         };
-    }
+    };
 
     Plugin.__createGuid = function() {
         return window.crypto.randomUUID().replaceAll('-', '').toUpperCase();
-    }
+    };
 
     Plugin.__getCurrentDate = function() {
         const date = new Date();
         return this.__addZeroIfNecessary(date.getDate()) + '.'
             + this.__addZeroIfNecessary(date.getMonth()) + '.'
             + date.getFullYear();
-    }
+    };
 
     Plugin.__getCurrentTime = function() {
         const date = new Date();
         return this.__addZeroIfNecessary(date.getHours()) + ':'
             + this.__addZeroIfNecessary(date.getMinutes());
-    }
+    };
 
     Plugin.__addZeroIfNecessary = function(value) {
         return ('0' + value).slice(-2);
-    }
+    };
 
     Plugin.__getContentElement = function(cdata, layoutElement) {
         return cdata?.id
             ? this.__renderDocumentInfo(cdata)
             : this.__renderInputField(cdata, layoutElement);
-    }
+    };
 
     Plugin.__renderDocumentInfo = function(cdata) {
         return new CUI.VerticalLayout({
@@ -246,7 +227,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
                 })
             }
         });
-    }
+    };
 
     Plugin.__renderInputField = function(cdata, layoutElement) {
         const inputElement = new CUI.Input({
@@ -262,7 +243,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
         const suggestionsMenu = this.__getSuggestionsMenu(inputElement);
 
         return inputElement.start();
-    }
+    };
 
     Plugin.__getSuggestionsMenu = function(inputElement) {
         return new CUI.Menu({
@@ -270,7 +251,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
             element: inputElement,
             use_element_width_as_min_width: true
         });
-    }
+    };
 
     Plugin.__triggerSuggestionsUpdate = function(suggestionsMenu, searchString, cdata, layoutElement) {
         if (this.currentTimeout) clearTimeout(this.currentTimeout);
@@ -278,7 +259,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
             this.__updateSuggestionsMenu(suggestionsMenu, searchString, cdata, layoutElement);
             this.currentTimeout = undefined;
         }, 500);
-    }
+    };
 
     Plugin.__updateSuggestionsMenu = function(suggestionsMenu, searchString, cdata, layoutElement) {
         const suggestions = this.__getSuggestions(searchString);
@@ -291,7 +272,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
         } else {
             suggestionsMenu.hide();
         }
-    }
+    };
 
     Plugin.__getSuggestions = function(searchString) {
         // TODO Fetch suggestions via DoRIS REST API
@@ -306,7 +287,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
         if (!searchString) return [];
 
         return documents.filter(document => document.id.startsWith(searchString));
-    }
+    };
 
     Plugin.__getSuggestionItemList = function(suggestions, cdata, layoutElement, suggestionsMenu) {
         const items = suggestions.map(suggestion => {
@@ -325,15 +306,15 @@ var CustomDataTypeDoRIS = (function(superClass) {
                 suggestionsMenu.hide();
             }
         };
-    }
+    };
 
-    Plugin.__renderActionsButtonBar = function(cdata, layoutElement) {
+    Plugin.__renderActionsButtonBar = function(cdata, layoutElement, dorisConfiguration) {
         return new CUI.Buttonbar({
-            buttons: [this.__renderActionsButton(cdata, layoutElement)]
+            buttons: [this.__renderActionsButton(cdata, layoutElement, dorisConfiguration)]
         });
-    }
+    };
 
-    Plugin.__renderActionsButton = function(cdata, layoutElement) {
+    Plugin.__renderActionsButton = function(cdata, layoutElement, dorisConfiguration) {
         const menuButtonElement = new CUI.Button({
             text: '',
             icon: new CUI.Icon({ class: 'fa-ellipsis-v' }),
@@ -341,38 +322,38 @@ var CustomDataTypeDoRIS = (function(superClass) {
             onClick: () => this.__openActionsMenu(cdata, menuElement)
         });
 
-        const menuElement = this.__getActionsMenu(cdata, menuButtonElement, layoutElement);
+        const menuElement = this.__getActionsMenu(cdata, menuButtonElement, layoutElement, dorisConfiguration);
 
         return menuButtonElement;
-    }
+    };
 
-    Plugin.__getActionsMenu = function(cdata, menuButtonElement, layoutElement) {
+    Plugin.__getActionsMenu = function(cdata, menuButtonElement, layoutElement, dorisConfiguration) {
         const menuElement = new CUI.Menu({
             class: 'customDataTypeCommonsMenu',
             element: menuButtonElement
         });
 
         menuElement._auto_close_after_click = false;
-        menuElement.setItemList(this.__getActionsMenuItemList(cdata, menuElement, layoutElement));
+        menuElement.setItemList(this.__getActionsMenuItemList(cdata, menuElement, layoutElement, dorisConfiguration));
         return menuElement;
-    }
+    };
 
-    Plugin.__getActionsMenuItemList = function(cdata, menuElement, layoutElement) {
+    Plugin.__getActionsMenuItemList = function(cdata, menuElement, layoutElement, dorisConfiguration) {
         return {
             items: [
                 this.__getDetailInfoButton(cdata, menuElement),
                 this.__getEditButton(),
-                this.__getDeleteButton(cdata, menuElement, layoutElement)
+                this.__getDeleteButton(cdata, menuElement, layoutElement, dorisConfiguration)
             ]
         };
-    }
+    };
 
     Plugin.__openActionsMenu = function(cdata, menuElement) {
         menuElement.getItemList().getItems().done(items => {
             items.forEach(item => item.disabled = !this.__isValidData(cdata));
             menuElement.show();
         });
-    }
+    };
 
     Plugin.__getDetailInfoButton = function(cdata, menuElement) {
         return {
@@ -381,7 +362,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
             icon_left: new CUI.Icon({ class: 'fa-info-circle' }),
             onClick: (_, buttonElement) => this.__openDetailInfoTooltip(cdata, buttonElement, menuElement)
         };
-    }
+    };
 
     Plugin.__openDetailInfoTooltip = function(cdata, buttonElement, menuElement) {
         const tooltip = new CUI.Tooltip({
@@ -406,7 +387,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
             tooltip.DOM.innerHTML = content;
             tooltip.autoSize();
         });
-    }
+    };
 
     Plugin.__getDetailInfoContent = function(cdata) {
         return new Promise(resolve => {
@@ -422,7 +403,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
                 resolve(content);
             });
         });
-    }
+    };
 
     Plugin.__getEditButton = function() {
         return {
@@ -433,9 +414,9 @@ var CustomDataTypeDoRIS = (function(superClass) {
                 // TODO Implement
             }
         };
-    }
+    };
 
-    Plugin.__getDeleteButton = function(cdata, menuElement, layoutElement) {
+    Plugin.__getDeleteButton = function(cdata, menuElement, layoutElement, dorisConfiguration) {
         return {
             text: $$('custom.data.type.doris.buttonMenu.delete'),
             value: 'delete',
@@ -443,20 +424,20 @@ var CustomDataTypeDoRIS = (function(superClass) {
             onClick: () => {
                 this.__deleteEntry(cdata, layoutElement);
                 menuElement.hide();
-                this.__updateEditorInput(cdata, layoutElement);
+                this.__updateEditorInput(cdata, layoutElement, dorisConfiguration);
             }
         };
-    }
+    };
 
-    Plugin.__addEntry = function(id, typ, cdata, layoutElement) {
+    Plugin.__addEntry = function(id, typ, cdata, layoutElement, dorisConfiguration) {
         cdata.id = id;
         cdata.typ = typ;
         cdata._fulltext = { text: id };
         cdata._standard = { text: id };
 
-        this.__updateEditorInput(cdata, layoutElement);
+        this.__updateEditorInput(cdata, layoutElement, dorisConfiguration);
         this.__notifyEditor(layoutElement);
-    }
+    };
 
     Plugin.__deleteEntry = function(cdata, layoutElement) {
         delete cdata.id;
@@ -465,7 +446,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
         delete cdata._standard;
 
         this.__notifyEditor(layoutElement);
-    }
+    };
 
     Plugin.__notifyEditor = function(layoutElement) {
         CUI.Events.trigger({
@@ -477,15 +458,15 @@ var CustomDataTypeDoRIS = (function(superClass) {
             node: layoutElement,
             type: 'data-changed'
         });
-    }
+    };
 
     Plugin.__isValidData = function(cdata) {
         return cdata?.id && cdata?.typ;
-    }
+    };
 
     Plugin.__getDocumentLabel = function(document) {
         return document.id + ' (' + document.typ + ')';
-    }
+    };
 
     Plugin.__getDetailInfoData = function(id) {
          // TODO Get document information via DoRIS REST API
@@ -496,7 +477,157 @@ var CustomDataTypeDoRIS = (function(superClass) {
                 lastChangeDate: '14.09.2023'
             });
         });
-    }
+    };
+
+    Plugin.__createDocument = function(newDocumentData, dorisConfiguration) {
+        return this.__updateLfdNrInDoRIS(newDocumentData, dorisConfiguration).then(lfdNr => {
+            if (!lfdNr) throw 'Updating lfdNr in DoRIS failed!';
+            newDocumentData.lfdNr = lfdNr;
+            return this.__addDoRISDocument(newDocumentData, dorisConfiguration);
+        }).then(result => {
+            if (!result) throw 'Creating new document in DoRIS failed!';
+            return this.__getDoRISDocument('GUID: ' + newDocumentData.guid, dorisConfiguration);
+        }).then(newDocumentValues => {
+            if (!newDocumentValues) throw 'Reading new document from DoRIS failed!';
+            return {
+                id: newDocumentValues[0],
+                typ: newDocumentData.typ
+            };
+        }).catch(err => {
+            console.error(err);
+            return undefined;
+        });
+    };
+
+    Plugin.__updateLfdNrInDoRIS = function(newDocumentData, dorisConfiguration) {
+        const query = 'SELECT id, maxnr FROM GZLfdNr WHERE GZ: ' + newDocumentData.type.id + '//;'
+    
+        return this.__getDoRISQueryResult(query, ['maxnr'], dorisConfiguration).then(data => {
+            if (!data || !data.length || !data[0].length) return undefined;
+
+            const lfdNr = (parseInt(data[0][0]) + 1).toString();
+            return this.__modifyViaDoRISQuery(query, ['maxnr'], [lfdNr], dorisConfiguration).then(result => {
+                return result ? lfdNr : undefined;
+            })
+        });
+    };
+
+    Plugin.__getDoRISQueryResult = function(query, fieldNames, dorisConfiguration) {
+        const params = new URLSearchParams({
+            username: dorisConfiguration.username,
+            password: dorisConfiguration.password,
+            query,
+            startIndex: 0,
+            endIndex: 9
+        });
+
+        fieldNames.forEach(fieldName => params.append('fieldNames[]', fieldName));
+
+        const url = dorisConfiguration.url + 'getQueryResult?' + params.toString();
+
+        return this.__performGetRequest(url);
+    };
+
+    Plugin.__modifyViaDoRISQuery = function(query, fieldNames, fieldValues, dorisConfiguration) {
+        const requestData = {
+            username: dorisConfiguration.username,
+            password: dorisConfiguration.password,
+            query,
+            fieldNames,
+            fieldValues
+        };
+
+        return this.__performPostRequest(dorisConfiguration.url + 'modify', requestData);
+    };
+
+    Plugin.__getDoRISDocument = function(query, dorisConfiguration) {
+        const fieldNames = ['ROWNUMBER', 'GUID', 'TYP', 'AKTEINH','AENDAM','AENDUM'];
+
+        const params = new URLSearchParams({
+            username: dorisConfiguration.username,
+            password: dorisConfiguration.password,
+            query
+        });
+
+        fieldNames.forEach(fieldName => params.append('fieldNames[]', fieldName));
+
+        const url = dorisConfiguration.url + 'getDocument?' + params.toString();
+        
+        return this.__performGetRequest(url);
+    };
+
+    Plugin.__addDoRISDocument = function(documentData,  dorisConfiguration) {
+        const fields = {
+            GUID: documentData.guid,
+            AZ: documentData.type.id,
+            GZLFDNR: documentData.lfdNr,
+            GZAKTE: documentData.type.id + '-' + documentData.lfdNr,
+            GZJAHR: documentData.creationYear,
+            TYP: 'Akte',
+            AKTENTYP: documentData.type.name,
+            AKTEINH: documentData.content,
+            OE: documentData.type.oe,
+            AUSBLEND: 'N',
+            FORTSETZ: 'N',
+            NACHGJN: 'N',
+            TEMPLATE: 'DA',
+            LFDNR: '0',
+            PAPERJN: 'N',
+            ERSTNAME: 'ADABweb', // TODO Set username?
+            ERSTAM: documentData.creationDate,
+            ERSTUM: documentData.creationTime,
+            AENDNAME: 'ADABweb', // TODO Set username?
+            AENDAM: documentData.creationDate,
+            AENDUM: documentData.creationTime,
+            ACCESS: 'NLD' // TODO Remove?
+        };
+
+        const requestData = {
+            username: dorisConfiguration.username,
+            password: dorisConfiguration.password,
+            'fieldNames[]': Object.keys(fields),
+            'fieldValues[]': Object.values(fields)
+        };
+        
+        return this.__performPostRequest(dorisConfiguration.url + 'addNew', requestData);
+    };
+
+    Plugin.__performGetRequest = function(url) {
+        return fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then(response => {
+            if (!response.ok) {
+                console.error(response.status);
+                return undefined;
+            }
+            return response.json();
+        }).catch(err => {
+            console.error(err);
+            return undefined;
+        });
+    };
+
+    Plugin.__performPostRequest = function(url, requestData) {
+        return fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+        }).then(response => {
+            if (!response.ok) {
+                console.error(response.status);
+                return undefined;
+            }
+            return response.json();
+        }).catch(err => {
+            console.error(err);
+            return undefined;
+        });
+    };
 
     return CustomDataTypeDoRIS;
 })(CustomDataType);
