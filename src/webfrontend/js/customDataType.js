@@ -82,14 +82,14 @@ var CustomDataTypeDoRIS = (function(superClass) {
             right: {}
         });
 
-        this.__updateEditorInput(data, cdata, layoutElement, this.__getDoRISConfiguration());
+        this.__updateEditorInput(top_level_data, cdata, layoutElement, this.__getDoRISConfiguration());
 
         return layoutElement;
     };
 
     Plugin.__updateEditorInput = function(data, cdata, layoutElement, dorisConfiguration) {
         layoutElement.replace(this.__getCreateDocumentButton(data, cdata, layoutElement, dorisConfiguration), 'left');
-        layoutElement.replace(this.__getContentElement(data, cdata, layoutElement), 'center');
+        layoutElement.replace(this.__getContentElement(data, cdata, layoutElement, dorisConfiguration), 'center');
         layoutElement.replace(this.__renderActionsButtonBar(data, cdata, layoutElement, dorisConfiguration), 'right');
     };
 
@@ -257,10 +257,10 @@ var CustomDataTypeDoRIS = (function(superClass) {
         return ('0' + value).slice(-2);
     };
 
-    Plugin.__getContentElement = function(data, cdata, layoutElement) {
+    Plugin.__getContentElement = function(data, cdata, layoutElement, dorisConfiguration) {
         return cdata?.id
             ? this.__renderDocumentInfo(cdata)
-            : this.__renderInputField(data, cdata, layoutElement);
+            : this.__renderInputField(data, cdata, layoutElement, dorisConfiguration);
     };
 
     Plugin.__renderDocumentInfo = function(cdata) {
@@ -275,14 +275,16 @@ var CustomDataTypeDoRIS = (function(superClass) {
         });
     };
 
-    Plugin.__renderInputField = function(data, cdata, layoutElement) {
+    Plugin.__renderInputField = function(data, cdata, layoutElement, dorisConfiguration) {
         const inputElement = new CUI.Input({
             name: 'directSelectInput',
             class: 'pluginDirectSelectEditInput',
             undo_and_changed_support: false,
             content_size: false,
             onKeyup: input => {
-                this.__triggerSuggestionsUpdate(suggestionsMenu, input.getValueForInput(), data, cdata, layoutElement);
+                this.__triggerSuggestionsUpdate(
+                    suggestionsMenu, input.getValueForInput(), data, cdata, layoutElement, dorisConfiguration
+                );
             }
         });
 
@@ -299,43 +301,65 @@ var CustomDataTypeDoRIS = (function(superClass) {
         });
     };
 
-    Plugin.__triggerSuggestionsUpdate = function(suggestionsMenu, searchString, data, cdata, layoutElement) {
+    Plugin.__triggerSuggestionsUpdate = function(suggestionsMenu, searchString, data, cdata, layoutElement, dorisConfiguration) {
         if (this.currentTimeout) clearTimeout(this.currentTimeout);
         this.currentTimeout = setTimeout(() => {
-            this.__updateSuggestionsMenu(suggestionsMenu, searchString, data, cdata, layoutElement);
+            this.__updateSuggestionsMenu(suggestionsMenu, searchString, data, cdata, layoutElement, dorisConfiguration);
             this.currentTimeout = undefined;
         }, 500);
     };
 
-    Plugin.__updateSuggestionsMenu = function(suggestionsMenu, searchString, data, cdata, layoutElement) {
-        const suggestions = this.__getSuggestions(searchString);
+    Plugin.__updateSuggestionsMenu = function(suggestionsMenu, searchString, data, cdata, layoutElement, dorisConfiguration) {
+        this.__getSuggestions(searchString, dorisConfiguration).then(suggestions => {
+            if (suggestions?.length) {
+                suggestionsMenu.setItemList(
+                    this.__getSuggestionItemList(suggestions, data, cdata, layoutElement, suggestionsMenu, dorisConfiguration)
+                );
+                suggestionsMenu.show();
+            } else {
+                suggestionsMenu.hide();
+            }
+        });
+    };
 
-        if (suggestions.length > 0) {
-            suggestionsMenu.setItemList(
-                this.__getSuggestionItemList(suggestions, data, cdata, layoutElement, suggestionsMenu)
-            );
-            suggestionsMenu.show();
-        } else {
-            suggestionsMenu.hide();
+    Plugin.__getSuggestions = function(searchString, dorisConfiguration) {
+        const query = this.__getSuggestionsQuery(searchString);
+        if (!query) return Promise.resolve([]);
+        
+        return this.__getDoRISQueryResult(query, ['ROWNUMBER','AKTENTYP'], dorisConfiguration).then(data => {
+            return data
+                ? data.map(documentValues => {
+                    return { id: documentValues[0], typ: documentValues[1] };
+                }) : [];
+        });
+    };
+
+    Plugin.__getSuggestionsQuery = function(searchString) {
+        searchString = this.__prepareSearchString(searchString);
+        if (!searchString) return undefined;
+
+        let query = 'ROWNUMBER:' + searchString + ';';
+        let additionalDigits = 0;
+
+        while (++additionalDigits + searchString.length <= 7) {
+            query += ',ROWNUMBER:' + searchString + '0'.repeat(additionalDigits)
+                + '<>' + searchString + '9'.repeat(additionalDigits) + ';';
         }
-    };
 
-    Plugin.__getSuggestions = function(searchString) {
-        // TODO Fetch suggestions via DoRIS REST API
-        const documents = [
-            { id: 'id1', typ: 'Akte' },
-            { id: 'id2', typ: 'Akte' },
-            { id: 'id3', typ: 'Akte' },
-            { id: 'id4', typ: 'Akte' },
-            { id: 'id5', typ: 'Akte' }
-        ];
+        return query;
+    }
 
-        if (!searchString) return [];
+    Plugin.__prepareSearchString = function(searchString) {
+        if (!searchString) return undefined;
+    
+        let result = searchString.toLowerCase().replace('doris:', '');    
+        if (!/^\d+$/.test(result)) return undefined;
 
-        return documents.filter(document => document.id.startsWith(searchString));
-    };
+        result = parseInt(result).toString();
+        return result?.length <= 7 && result !== '0' ? result : undefined;
+    }
 
-    Plugin.__getSuggestionItemList = function(suggestions, data, cdata, layoutElement, suggestionsMenu) {
+    Plugin.__getSuggestionItemList = function(suggestions, data, cdata, layoutElement, suggestionsMenu, dorisConfiguration) {
         const items = suggestions.map(suggestion => {
             return {
                 text: this.__getDocumentLabel(suggestion),
@@ -348,7 +372,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
             keyboardControl: true,
             onClick: (_, button) => {
                 const value = button.getOpt('value');
-                this.__addEntry(value.id, value.typ, data, cdata, layoutElement);
+                this.__addEntry(value.id, value.typ, data, cdata, layoutElement, dorisConfiguration);
                 suggestionsMenu.hide();
             }
         };
@@ -387,7 +411,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
     Plugin.__getActionsMenuItemList = function(data, cdata, menuElement, layoutElement, dorisConfiguration) {
         return {
             items: [
-                this.__getDetailInfoButton(cdata, menuElement),
+                this.__getDetailInfoButton(cdata, menuElement, dorisConfiguration),
                 this.__getEditButton(cdata, dorisConfiguration),
                 this.__getDeleteButton(data, cdata, menuElement, layoutElement, dorisConfiguration)
             ]
@@ -401,16 +425,17 @@ var CustomDataTypeDoRIS = (function(superClass) {
         });
     };
 
-    Plugin.__getDetailInfoButton = function(cdata, menuElement) {
+    Plugin.__getDetailInfoButton = function(cdata, menuElement, dorisConfiguration) {
         return {
             text: $$('custom.data.type.doris.buttonMenu.detailInfo'),
             value: 'detail',
             icon_left: new CUI.Icon({ class: 'fa-info-circle' }),
-            onClick: (_, buttonElement) => this.__openDetailInfoTooltip(cdata, buttonElement, menuElement)
+            onClick: (_, buttonElement) =>
+                this.__openDetailInfoTooltip(cdata, buttonElement, menuElement, dorisConfiguration)
         };
     };
 
-    Plugin.__openDetailInfoTooltip = function(cdata, buttonElement, menuElement) {
+    Plugin.__openDetailInfoTooltip = function(cdata, buttonElement, menuElement, dorisConfiguration) {
         const tooltip = new CUI.Tooltip({
             element: buttonElement,
             class: 'doris-plugin-detail-info-tooltip',
@@ -429,25 +454,22 @@ var CustomDataTypeDoRIS = (function(superClass) {
             call: () => menuElement.hide()
         });
 
-        this.__getDetailInfoContent(cdata).then(content => {
+        this.__getDetailInfoContent(cdata, dorisConfiguration).then(content => {
             tooltip.DOM.innerHTML = content;
             tooltip.autoSize();
         });
     };
 
-    Plugin.__getDetailInfoContent = function(cdata) {
-        return new Promise(resolve => {
-            this.__getDetailInfoData(cdata.id).then(data => {
-                const content = '<h5>DoRIS:' + cdata.id + '</h5>'
-                + '<div><b>' + $$('custom.data.type.doris.field.typ') + ': </b>'
-                    + cdata.typ + '</div>'
-                + '<div><b>' + $$('custom.data.type.doris.field.lastChangeDate') + ': </b>'
-                    + data.lastChangeDate + '</div>'
-                + '<div><b>' + $$('custom.data.type.doris.field.content') + ': </b>'
-                    + data.content + '</div>'
-
-                resolve(content);
-            });
+    Plugin.__getDetailInfoContent = function(cdata, dorisConfiguration) {
+        return this.__getDoRISDocument('ROWNUMBER: ' + cdata.id, dorisConfiguration).then(data => {
+            return '<h5>DoRIS:' + cdata.id + '</h5>'
+            + '<div><b>' + $$('custom.data.type.doris.field.typ') + ': </b>'
+                + cdata.typ + '</div>'
+            + '<div><b>' + $$('custom.data.type.doris.field.content') + ': </b>'
+                + data.content + '</div>'
+            + '<div><b>' + $$('custom.data.type.doris.field.lastChangeDate') + ': </b>'
+                + data.changeDate + ', ' + data.changeTime + ' '
+                + $$('custom.data.type.doris.field.lastChangeDate.suffix') + ' </div>';
         });
     };
 
@@ -513,18 +535,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
     };
 
     Plugin.__getDocumentLabel = function(document) {
-        return document.id + ' (' + document.typ + ')';
-    };
-
-    Plugin.__getDetailInfoData = function(id) {
-         // TODO Get document information via DoRIS REST API
-
-        return new Promise(resolve => {
-            resolve({
-                content: 'Example',
-                lastChangeDate: '14.09.2023'
-            });
-        });
+        return 'DoRIS:' + document.id + ' (' + document.typ + ')';
     };
 
     Plugin.__createDocument = function(newDocumentData, dorisConfiguration) {
@@ -535,10 +546,10 @@ var CustomDataTypeDoRIS = (function(superClass) {
         }).then(result => {
             if (!result) throw 'Creating new document in DoRIS failed!';
             return this.__getDoRISDocument('GUID: ' + newDocumentData.guid, dorisConfiguration);
-        }).then(newDocumentValues => {
-            if (!newDocumentValues) throw 'Reading new document from DoRIS failed!';
+        }).then(newDocument => {
+            if (!newDocument) throw 'Reading new document from DoRIS failed!';
             return {
-                id: newDocumentValues[0],
+                id: newDocument.id,
                 type: newDocumentData.type.name
             };
         }).catch(err => {
@@ -589,7 +600,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
     };
 
     Plugin.__getDoRISDocument = function(query, dorisConfiguration) {
-        const fieldNames = ['ROWNUMBER', 'GUID', 'TYP', 'AKTEINH','AENDAM','AENDUM'];
+        const fieldNames = ['ROWNUMBER', 'GUID', 'AKTENTYP', 'AKTEINH','AENDAM','AENDUM'];
 
         const params = new URLSearchParams({
             username: dorisConfiguration.username,
@@ -601,7 +612,18 @@ var CustomDataTypeDoRIS = (function(superClass) {
 
         const url = dorisConfiguration.url + 'getDocument?' + params.toString();
         
-        return this.__performGetRequest(url);
+        return this.__performGetRequest(url).then(documentValues => {
+            if (!documentValues) return undefined;
+
+            return {
+                id: documentValues[0],
+                guid: documentValues[1],
+                type: documentValues[2],
+                content: documentValues[3],
+                changeDate: documentValues[4],
+                changeTime: documentValues[5]
+            };
+        });
     };
 
     Plugin.__addDoRISDocument = function(documentData, dorisConfiguration) {
