@@ -461,7 +461,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
     };
 
     Plugin.__getDetailInfoContent = function(cdata, dorisConfiguration) {
-        return this.__getDoRISDocument('ROWNUMBER: ' + cdata.id, dorisConfiguration).then(data => {
+        return this.__getDoRISDocument('ROWNUMBER: ' + cdata.id + ';', dorisConfiguration).then(data => {
             return '<h5>DoRIS:' + cdata.id + '</h5>'
             + '<div><b>' + $$('custom.data.type.doris.field.typ') + ': </b>'
                 + cdata.typ + '</div>'
@@ -474,7 +474,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
     };
 
     Plugin.__getEditButton = function(cdata, dorisConfiguration) {
-        const editUrl = dorisConfiguration.url + 'DA/jsp/index.jsp?View=ListView&RowNumber=' + cdata.id;
+        const editUrl = dorisConfiguration.url + 'cust/nld/DA/jsp/index.jsp?View=ListView&RowNumber=' + cdata.id;
 
         return {
             text: $$('custom.data.type.doris.buttonMenu.edit'),
@@ -545,7 +545,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
             return this.__addDoRISDocument(newDocumentData, dorisConfiguration);
         }).then(result => {
             if (!result) throw 'Creating new document in DoRIS failed!';
-            return this.__getDoRISDocument('GUID: ' + newDocumentData.guid, dorisConfiguration);
+            return this.__getDoRISDocument('GUID: ' + newDocumentData.guid + ';', dorisConfiguration);
         }).then(newDocument => {
             if (!newDocument) throw 'Reading new document from DoRIS failed!';
             return {
@@ -582,7 +582,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
 
         fieldNames.forEach(fieldName => params.append('fieldNames[]', fieldName));
 
-        const url = dorisConfiguration.url + 'getQueryResult?' + params.toString();
+        const url = dorisConfiguration.url + 'services/rest/getQueryResult?' + params.toString();
 
         return this.__performGetRequest(url);
     };
@@ -596,7 +596,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
             fieldValues
         };
 
-        return this.__performPostRequest(dorisConfiguration.url + 'modify', requestData);
+        return this.__performPostRequest(dorisConfiguration.url + 'services/rest/modify', requestData);
     };
 
     Plugin.__getDoRISDocument = function(query, dorisConfiguration) {
@@ -610,7 +610,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
 
         fieldNames.forEach(fieldName => params.append('fieldNames[]', fieldName));
 
-        const url = dorisConfiguration.url + 'getDocument?' + params.toString();
+        const url = dorisConfiguration.url + 'services/rest/getDocument?' + params.toString();
         
         return this.__performGetRequest(url).then(documentValues => {
             if (!documentValues) return undefined;
@@ -655,11 +655,11 @@ var CustomDataTypeDoRIS = (function(superClass) {
         const requestData = {
             username: dorisConfiguration.username,
             password: dorisConfiguration.password,
-            'fieldNames[]': Object.keys(fields),
-            'fieldValues[]': Object.values(fields)
+            fieldNames: Object.keys(fields),
+            fieldValues: Object.values(fields)
         };
         
-        return this.__performPostRequest(dorisConfiguration.url + 'addNew', requestData);
+        return this.__performPostRequest(dorisConfiguration.url + 'services/rest/addNew', requestData);
     };
 
     Plugin.__performGetRequest = function(url) {
