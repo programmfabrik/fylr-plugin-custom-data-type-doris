@@ -183,17 +183,13 @@ var CustomDataTypeDoRIS = (function(superClass) {
         return this.__getRegion(data).then(region => {
             const cityDistrict = this.__getListValueFromObjectData(
                 data, '_nested:item__politische_zugehoerigkeit', 'stadtteil'
-            );
-            const street = this.__getListValueFromObjectData(data, '_nested:item__anschrift', 'strasse');
-            const buildingNumber = this.__getListValueFromObjectData(data, '_nested:item__anschrift', 'hausnummer');
-            const type = data.lk_objekttyp?.conceptName;
-            const title = this.__getListValueFromObjectData(data, '_nested:item__titel', 'titel');
+            ) || '?';
+            const street = this.__getListValueFromObjectData(data, '_nested:item__anschrift', 'strasse') || '?';
+            const buildingNumber = this.__getListValueFromObjectData(data, '_nested:item__anschrift', 'hausnummer') || '?';
+            const type = data.lk_objekttyp?.conceptName || '?';
+            const title = this.__getListValueFromObjectData(data, '_nested:item__titel', 'titel') || '?';
 
-            if (!region || !street || !buildingNumber || !type || !title) {
-                throw 'Missing object information!';
-            }
-
-            return region + ', '
+            return (region || '?') + ', '
                 + cityDistrict + ', '
                 + street + ' ' + buildingNumber + ', ' 
                 + type + ', '
