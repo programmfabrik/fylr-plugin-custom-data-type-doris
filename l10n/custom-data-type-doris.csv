@@ -19,6 +19,8 @@ userPlugin.doris.username.label,Username,User name
 userPlugin.doris.username.hint,Der Username des DoRIS-Accounts,The user name of the DoRIS account
 userPlugin.doris.password.label,Passwort,Password
 userPlugin.doris.password.hint,Das Passwort des DoRIS-Accounts,The password of the DoRIS account
+userPlugin.doris.organizationUnit.label,Organisationseinheit,Organization unit
+userPlugin.doris.organizationUnit.hint,"Die Organisationseinheit, die bei neu angelegten DoRIS-Akten gesetzt wird, wenn für den gewählten Aktentyp keine Organisationseinheit festgelegt ist","The organization unit that will be set for newly created DoRIS documents in case no organization unit is defined for the chosen document type"
 server.config.name.system.doris,DoRIS,DoRIS
 server.config.parameter.system.doris.url.label,URL,URL
 server.config.parameter.system.doris.types.label,Typen,Types

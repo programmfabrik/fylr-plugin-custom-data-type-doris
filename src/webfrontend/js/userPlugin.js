@@ -32,6 +32,13 @@ var UserPluginDoRIS = (function(superClass) {
 							label: $$('userPlugin.doris.password.label'),
 							hint: $$('userPlugin.doris.password.hint')
                         }
+                    }, {
+						type: CUI.Input,
+						name: 'doris_organization_unit',
+						form: {
+							label: $$('userPlugin.doris.organizationUnit.label'),
+							hint: $$('userPlugin.doris.organizationUnit.hint')
+                        }
                     }]
                 });
 				return form.start();
@@ -42,6 +49,7 @@ var UserPluginDoRIS = (function(superClass) {
 	Plugin.getSaveData = function(saveData) {
 		saveData.user.custom_data.doris_username = this._user.data.user.custom_data.doris_username;
         saveData.user.custom_data.doris_password = this._user.data.user.custom_data.doris_password;
+		saveData.user.custom_data.doris_organization_unit = this._user.data.user.custom_data.doris_organization_unit;
     }
 
 	Plugin.isAllowed = function() {

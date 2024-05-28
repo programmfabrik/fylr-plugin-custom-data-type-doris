@@ -632,7 +632,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
             TYP: 'Akte',
             AKTENTYP: documentData.type.name,
             AKTEINH: documentData.content,
-            OE: documentData.type.organization_unit,
+            OE: this.__getOrganizationUnit(documentData, dorisConfiguration),
             AUSBLEND: 'N',
             FORTSETZ: 'N',
             NACHGJN: 'N',
@@ -657,6 +657,15 @@ var CustomDataTypeDoRIS = (function(superClass) {
         
         return this.__performPostRequest(dorisConfiguration.url + 'services/rest/addNew', requestData);
     };
+
+    Plugin.__getOrganizationUnit = function(documentData, dorisConfiguration) {
+
+        return documentData.type.organization_unit?.length
+            ? documentData.type.organization_unit
+            : dorisConfiguration.organizationUnit;
+        
+        // TODO Show error message if organization unit is not defined in user settings
+    }
 
     Plugin.__performGetRequest = function(url) {
         return fetch(url, {
@@ -702,6 +711,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
         return {
             username: userConfiguration.doris_username,
             password: userConfiguration.doris_password,
+            organizationUnit: userConfiguration.doris_organization_unit,
             url
         }
     }
