@@ -639,10 +639,10 @@ var CustomDataTypeDoRIS = (function(superClass) {
             TEMPLATE: 'DA',
             LFDNR: '0',
             PAPERJN: 'N',
-            ERSTNAME: 'ADABweb', // TODO Set username?
+            ERSTNAME: dorisConfiguration.fullName,
             ERSTAM: documentData.creationDate,
             ERSTUM: documentData.creationTime,
-            AENDNAME: 'ADABweb', // TODO Set username?
+            AENDNAME: dorisConfiguration.fullName,
             AENDAM: documentData.creationDate,
             AENDUM: documentData.creationTime,
             ACCESS: 'NLD' // TODO Remove?
@@ -702,16 +702,18 @@ var CustomDataTypeDoRIS = (function(superClass) {
     };
 
     Plugin.__getDoRISConfiguration = function() {
-        const userConfiguration = ez5.session.user.opts.user.user.custom_data;
+        const userConfiguration = ez5.session.user.opts.user.user;
+        const dorisPluginConfiguration = userConfiguration.custom_data;
         const baseConfiguration = this.__getBaseConfiguration();
 
         let url = baseConfiguration.url;
         if (!url.endsWith('/')) url += '/';
 
         return {
-            username: userConfiguration.doris_username,
-            password: userConfiguration.doris_password,
-            organizationUnit: userConfiguration.doris_organization_unit,
+            username: dorisPluginConfiguration.doris_username,
+            password: dorisPluginConfiguration.doris_password,
+            organizationUnit: dorisPluginConfiguration.doris_organization_unit,
+            fullName: userConfiguration.first_name + ' ' + userConfiguration.last_name,
             url
         }
     }
