@@ -18,6 +18,10 @@ custom.data.type.doris.detailInfo.loading,Lade Informationen,Loading information
 custom.data.type.doris.ok,OK,OK
 custom.data.type.doris.error.missingOrganizationUnit.title,Organisationseinheit nicht gefunden,Could not find organization unit
 custom.data.type.doris.error.missingOrganizationUnit.message,"Bevor Sie Akten dieses Typs anlegen können, muss Ihrem Benutzeraccount eine Organisationseinheit zugewiesen werden.","Before you can create documents of this type, an organization unit must be assigned to your user account."
+custom.data.type.doris.error.dorisUpdateFailure.title,Aktenerstellung fehlgeschlagen,Could not create document
+custom.data.type.doris.error.dorisUpdateFailure.message,Die Akte konnte in DoRIS nicht angelegt werden.,The document could not be created in DoRIS.
+custom.data.type.doris.error.dorisReadNewDocumentFailure.title,Aktenerstellung fehlgeschlagen,Could not create document
+custom.data.type.doris.error.dorisReadNewDocumentFailure.message,Die in DoRIS neu angelegte Akte konnte nicht gelesen werden.,The document newly created in DoRIS could not be read.
 userPlugin.doris.username.label,Username,User name
 userPlugin.doris.username.hint,Der Username des DoRIS-Accounts,The user name of the DoRIS account
 userPlugin.doris.password.label,Passwort,Password

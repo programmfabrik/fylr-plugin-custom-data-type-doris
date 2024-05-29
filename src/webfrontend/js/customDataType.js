@@ -535,21 +535,27 @@ var CustomDataTypeDoRIS = (function(superClass) {
     };
 
     Plugin.__createDocument = function(newDocumentData, dorisConfiguration) {
+        const organizationUnit = this.__getOrganizationUnit(newDocumentData, dorisConfiguration);
+        if (!organizationUnit) {
+            this.__showErrorMessage('missingOrganizationUnit');
+            return Promise.resolve(undefined);
+        }
+
         return this.__updateLfdNrInDoRIS(newDocumentData, dorisConfiguration).then(lfdNr => {
-            if (!lfdNr) throw 'Updating lfdNr in DoRIS failed!';
+            if (!lfdNr) throw 'dorisUpdateFailure';
             newDocumentData.lfdNr = lfdNr;
-            return this.__addDoRISDocument(newDocumentData, dorisConfiguration);
+            return this.__addDoRISDocument(newDocumentData, dorisConfiguration, organizationUnit);
         }).then(result => {
-            if (!result) throw 'Creating new document in DoRIS failed!';
+            if (!result) throw 'dorisUpdateFailure';
             return this.__getDoRISDocument('GUID: ' + newDocumentData.guid + ';', dorisConfiguration);
         }).then(newDocument => {
-            if (!newDocument) throw 'Reading new document from DoRIS failed!';
+            if (!newDocument) throw 'dorisReadNewDocumentFailure';
             return {
                 id: newDocument.id,
                 type: newDocumentData.type.name
             };
-        }).catch(err => {
-            console.error(err);
+        }).catch(errorId => {
+            this.__showErrorMessage(errorId);
             return undefined;
         });
     };
@@ -622,13 +628,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
         });
     };
 
-    Plugin.__addDoRISDocument = function(documentData, dorisConfiguration) {
-        const organizationUnit = this.__getOrganizationUnit(documentData, dorisConfiguration);
-        if (!organizationUnit) {
-            this.__showErrorMessage('missingOrganizationUnit');
-            return Promise.resolve(undefined);
-        }
-
+    Plugin.__addDoRISDocument = function(documentData, dorisConfiguration, organizationUnit) {
         const fields = {
             GUID: documentData.guid,
             AZ: documentData.type.id,
@@ -665,12 +665,9 @@ var CustomDataTypeDoRIS = (function(superClass) {
     };
 
     Plugin.__getOrganizationUnit = function(documentData, dorisConfiguration) {
-
         return documentData.type.organization_unit?.length
             ? documentData.type.organization_unit
             : dorisConfiguration.organizationUnit;
-        
-        // TODO Show error message if organization unit is not defined in user settings
     }
 
     Plugin.__performGetRequest = function(url) {
