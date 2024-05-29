@@ -117,10 +117,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
                     new CUI.Button({
                         text: $$('custom.data.type.doris.createDocument.cancel'),
                         class: 'cui-dialog',
-                        onClick: () => {
-                            modal.hide();
-                            modal.destroy();
-                        }
+                        onClick: () => this.__closeModal(modal)
                     }),
                     new CUI.Button({
                         text: $$('custom.data.type.doris.createDocument.confirm'),
@@ -128,13 +125,11 @@ var CustomDataTypeDoRIS = (function(superClass) {
                         primary: true,
                         onClick: () => {
                             const selectedType = types.find(type => inputData.type === type.id);
-                            modal.hide();
-                            modal.destroy();
+                            this.__closeModal(modal);
 
                             const creationInProgressModal = this.__openCreationInProgressModal();
                             this.__addNewDocument(selectedType, data, cdata, layoutElement, dorisConfiguration).finally(() => {
-                                creationInProgressModal.hide();
-                                creationInProgressModal.destroy();
+                                this.__closeModal(creationInProgressModal);
                             });
                         }
                     })
@@ -757,10 +752,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
                         text: $$('custom.data.type.doris.ok'),
                         class: 'cui-dialog',
                         primary: true,
-                        onClick: () => {
-                            modal.hide();
-                            modal.destroy();
-                        }
+                        onClick: () => this.__closeModal(modal)
                     })
                 ]
             }
@@ -769,6 +761,11 @@ var CustomDataTypeDoRIS = (function(superClass) {
         modal.autoSize();
 
         return modal.show();
+    };
+
+    Plugin.__closeModal = function(modal) {
+        modal.hide();
+        modal.destroy();
     };
 
     return CustomDataTypeDoRIS;
