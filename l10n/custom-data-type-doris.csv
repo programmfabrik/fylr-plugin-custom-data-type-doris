@@ -14,6 +14,7 @@ custom.data.type.doris.field.lastChangeDate.suffix,Uhr,
 custom.data.type.doris.createDocument.header,Neue DoRIS-Akte anlegen,Create new DoRIS document
 custom.data.type.doris.createDocument.confirm,Erstellen,Create
 custom.data.type.doris.createDocument.cancel,Abbrechen,Cancel
+custom.data.type.doris.creationInProgress.info,Akte wird angelegt...,Creating document...
 custom.data.type.doris.detailInfo.loading,Lade Informationen,Loading information
 custom.data.type.doris.ok,OK,OK
 custom.data.type.doris.error.missingOrganizationUnit.title,Organisationseinheit nicht gefunden,Could not find organization unit

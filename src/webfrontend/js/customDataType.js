@@ -128,9 +128,13 @@ var CustomDataTypeDoRIS = (function(superClass) {
                         primary: true,
                         onClick: () => {
                             const selectedType = types.find(type => inputData.type === type.id);
-                            this.__addNewDocument(selectedType, data, cdata, layoutElement, dorisConfiguration).then(() => {
-                                modal.hide();
-                                modal.destroy();
+                            modal.hide();
+                            modal.destroy();
+
+                            const creationInProgressModal = this.__openCreationInProgressModal();
+                            this.__addNewDocument(selectedType, data, cdata, layoutElement, dorisConfiguration).finally(() => {
+                                creationInProgressModal.hide();
+                                creationInProgressModal.destroy();
                             });
                         }
                     })
@@ -156,6 +160,20 @@ var CustomDataTypeDoRIS = (function(superClass) {
             }]
         }).start();
     };
+
+    Plugin.__openCreationInProgressModal = function() {
+        const modal = new CUI.Modal({
+            pane: {
+                header_left: new CUI.Label({ text: $$('custom.data.type.doris.createDocument.header') }),
+                content: new CUI.Label({ icon: 'spinner', text: $$('custom.data.type.doris.creationInProgress.info') }),
+                class: 'doris-plugin-modal-pane',
+            }
+        });
+
+        modal.autoSize();
+
+        return modal.show();   
+    }
 
     Plugin.__addNewDocument = function(type, data, cdata, layoutElement, dorisConfiguration) {
         return this.__buildNewDocumentData(type, data)
