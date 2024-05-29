@@ -15,6 +15,9 @@ custom.data.type.doris.createDocument.header,Neue DoRIS-Akte anlegen,Create new 
 custom.data.type.doris.createDocument.confirm,Erstellen,Create
 custom.data.type.doris.createDocument.cancel,Abbrechen,Cancel
 custom.data.type.doris.detailInfo.loading,Lade Informationen,Loading information
+custom.data.type.doris.ok,OK,OK
+custom.data.type.doris.error.missingOrganizationUnit.title,Organisationseinheit nicht gefunden,Could not find organization unit
+custom.data.type.doris.error.missingOrganizationUnit.message,"Bevor Sie Akten dieses Typs anlegen können, muss Ihrem Benutzeraccount eine Organisationseinheit zugewiesen werden.","Before you can create documents of this type, an organization unit must be assigned to your user account."
 userPlugin.doris.username.label,Username,User name
 userPlugin.doris.username.hint,Der Username des DoRIS-Accounts,The user name of the DoRIS account
 userPlugin.doris.password.label,Passwort,Password

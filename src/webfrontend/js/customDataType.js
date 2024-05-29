@@ -623,6 +623,12 @@ var CustomDataTypeDoRIS = (function(superClass) {
     };
 
     Plugin.__addDoRISDocument = function(documentData, dorisConfiguration) {
+        const organizationUnit = this.__getOrganizationUnit(documentData, dorisConfiguration);
+        if (!organizationUnit) {
+            this.__showErrorMessage('missingOrganizationUnit');
+            return Promise.resolve(undefined);
+        }
+
         const fields = {
             GUID: documentData.guid,
             AZ: documentData.type.id,
@@ -632,7 +638,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
             TYP: 'Akte',
             AKTENTYP: documentData.type.name,
             AKTEINH: documentData.content,
-            OE: this.__getOrganizationUnit(documentData, dorisConfiguration),
+            OE: organizationUnit,
             AUSBLEND: 'N',
             FORTSETZ: 'N',
             NACHGJN: 'N',
@@ -716,11 +722,39 @@ var CustomDataTypeDoRIS = (function(superClass) {
             fullName: userConfiguration.first_name + ' ' + userConfiguration.last_name,
             url
         }
-    }
+    };
 
-    Plugin.__getBaseConfiguration = function () {
+    Plugin.__getBaseConfiguration = function() {
         return ez5.session.getBaseConfig('plugin', 'custom-data-type-doris')['doris'];
-    }
+    };
+
+    Plugin.__showErrorMessage = function(errorId) {
+        const modal = new CUI.Modal({
+            pane: {
+                header_left: new CUI.Label({ text: $$('custom.data.type.doris.error.' + errorId + '.title') }),
+                content: new CUI.Label({
+                    text: $$('custom.data.type.doris.error.' + errorId + '.message'),
+                    multiline: true
+                }),
+                class: 'doris-plugin-modal-pane',
+                footer_right: [
+                    new CUI.Button({
+                        text: $$('custom.data.type.doris.ok'),
+                        class: 'cui-dialog',
+                        primary: true,
+                        onClick: () => {
+                            modal.hide();
+                            modal.destroy();
+                        }
+                    })
+                ]
+            }
+        });
+
+        modal.autoSize();
+
+        return modal.show();
+    };
 
     return CustomDataTypeDoRIS;
 })(CustomDataType);
