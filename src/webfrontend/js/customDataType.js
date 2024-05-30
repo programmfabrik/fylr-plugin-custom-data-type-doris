@@ -337,7 +337,11 @@ var CustomDataTypeDoRIS = (function(superClass) {
     };
 
     Plugin.__updateSuggestionsMenu = function(suggestionsMenu, loadingIcon, searchString, data, cdata, layoutElement, dorisConfiguration) {
-        this.__getSuggestions(searchString, dorisConfiguration).then(suggestions => {
+        const suggestionsPromise = this.__getSuggestions(searchString, dorisConfiguration);
+        this.activeSuggestionsPromise = suggestionsPromise;
+
+        suggestionsPromise.then(suggestions => {
+            if (this.activeSuggestionsPromise !== suggestionsPromise) return;
             if (suggestions?.length) {
                 suggestionsMenu.setItemList(
                     this.__getSuggestionItemList(suggestions, data, cdata, layoutElement, suggestionsMenu, dorisConfiguration)
