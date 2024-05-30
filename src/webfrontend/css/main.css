@@ -27,3 +27,10 @@
 .doris-plugin-detail-info-tooltip b {
   display: block;
 }
+
+.doris-plugin-suggestions-loading-icon {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background-color: white;
+}

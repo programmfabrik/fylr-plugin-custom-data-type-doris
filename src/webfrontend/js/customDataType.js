@@ -285,6 +285,8 @@ var CustomDataTypeDoRIS = (function(superClass) {
     };
 
     Plugin.__renderInputField = function(data, cdata, layoutElement, dorisConfiguration) {
+        const container = CUI.dom.div();
+
         const inputElement = new CUI.Input({
             name: 'directSelectInput',
             class: 'pluginDirectSelectEditInput',
@@ -292,14 +294,18 @@ var CustomDataTypeDoRIS = (function(superClass) {
             content_size: false,
             onKeyup: input => {
                 this.__triggerSuggestionsUpdate(
-                    suggestionsMenu, input.getValueForInput(), data, cdata, layoutElement, dorisConfiguration
+                    suggestionsMenu, loadingIcon, input.getValueForInput(), data, cdata, layoutElement, dorisConfiguration
                 );
             }
         });
 
         const suggestionsMenu = this.__getSuggestionsMenu(inputElement);
+        const loadingIcon = this.__getSuggestionsLoadingIcon();
 
-        return inputElement.start();
+        CUI.dom.append(container, inputElement.start());
+        CUI.dom.append(container, loadingIcon);
+
+        return container;
     };
 
     Plugin.__getSuggestionsMenu = function(inputElement) {
@@ -310,15 +316,27 @@ var CustomDataTypeDoRIS = (function(superClass) {
         });
     };
 
-    Plugin.__triggerSuggestionsUpdate = function(suggestionsMenu, searchString, data, cdata, layoutElement, dorisConfiguration) {
+    Plugin.__getSuggestionsLoadingIcon = function() {
+        const loadingIcon = new CUI.Label({
+            class: 'doris-plugin-suggestions-loading-icon',
+            icon: 'spinner',
+            text: ''
+        });
+        loadingIcon.hide();
+        
+        return loadingIcon;
+    }
+
+    Plugin.__triggerSuggestionsUpdate = function(suggestionsMenu, loadingIcon, searchString, data, cdata, layoutElement, dorisConfiguration) {
         if (this.currentTimeout) clearTimeout(this.currentTimeout);
         this.currentTimeout = setTimeout(() => {
-            this.__updateSuggestionsMenu(suggestionsMenu, searchString, data, cdata, layoutElement, dorisConfiguration);
+            loadingIcon.show();
+            this.__updateSuggestionsMenu(suggestionsMenu, loadingIcon, searchString, data, cdata, layoutElement, dorisConfiguration);
             this.currentTimeout = undefined;
         }, 500);
     };
 
-    Plugin.__updateSuggestionsMenu = function(suggestionsMenu, searchString, data, cdata, layoutElement, dorisConfiguration) {
+    Plugin.__updateSuggestionsMenu = function(suggestionsMenu, loadingIcon, searchString, data, cdata, layoutElement, dorisConfiguration) {
         this.__getSuggestions(searchString, dorisConfiguration).then(suggestions => {
             if (suggestions?.length) {
                 suggestionsMenu.setItemList(
@@ -328,6 +346,8 @@ var CustomDataTypeDoRIS = (function(superClass) {
             } else {
                 suggestionsMenu.hide();
             }
+        }).finally(() => {
+            loadingIcon.hide();
         });
     };
 
