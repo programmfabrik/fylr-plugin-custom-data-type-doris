@@ -371,15 +371,25 @@ var CustomDataTypeDoRIS = (function(superClass) {
         searchString = this.__prepareSearchString(searchString);
         if (!searchString) return undefined;
 
-        let query = 'ROWNUMBER:' + searchString + ';';
+        const typeNames = this.__getBaseConfiguration().types.map(type => type.name);
+
+        let query = 'TYP:Akte;+AKTENTYP:' + typeNames.join(',') + ';+ROWNUMBER:' + searchString;
         let additionalDigits = 0;
 
         while (++additionalDigits + searchString.length <= 7) {
-            query += ',ROWNUMBER:' + searchString + '0'.repeat(additionalDigits)
-                + '<>' + searchString + '9'.repeat(additionalDigits) + ';';
+            query += ',' + this.__decrement(searchString + '0'.repeat(additionalDigits))
+                + '<>' + this.__increment(searchString + '9'.repeat(additionalDigits));
         }
 
-        return query;
+        return query + ';';
+    }
+
+    Plugin.__increment = function(number) {
+        return (parseInt(number) + 1).toString();
+    }
+
+    Plugin.__decrement = function(number) {
+        return (parseInt(number) - 1).toString();
     }
 
     Plugin.__prepareSearchString = function(searchString) {
