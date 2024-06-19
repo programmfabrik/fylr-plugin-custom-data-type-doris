@@ -359,7 +359,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
         const query = this.__getSuggestionsQuery(searchString);
         if (!query) return Promise.resolve([]);
         
-        return this.__getDoRISQueryResult(query, ['ROWNUMBER','AKTENTYP'], dorisConfiguration).then(data => {
+        return this.__getDoRISQueryResult(query, ['ROWNUMBER', 'AKTENTYP'], dorisConfiguration).then(data => {
             return data
                 ? data.map(documentValues => {
                     return { id: documentValues[0], typ: documentValues[1] };
@@ -639,7 +639,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
     };
 
     Plugin.__getDoRISDocument = function(query, dorisConfiguration) {
-        const fieldNames = ['ROWNUMBER', 'GUID', 'AKTENTYP', 'AKTEINH','AENDAM','AENDUM'];
+        const fieldNames = ['ROWNUMBER', 'GUID', 'AKTENTYP', 'AKTEINH', 'AENDAM', 'AENDUM'];
 
         const params = new URLSearchParams({
             username: dorisConfiguration.username,
@@ -715,7 +715,10 @@ var CustomDataTypeDoRIS = (function(superClass) {
                 console.error(response.status);
                 return undefined;
             }
-            return response.json();
+            return response.arrayBuffer();
+        }).then(buffer => {
+            const decodedText = new TextDecoder('iso-8859-1').decode(buffer);
+            return JSON.parse(decodedText);
         }).catch(err => {
             console.error(err);
             return undefined;
