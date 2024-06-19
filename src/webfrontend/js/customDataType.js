@@ -168,7 +168,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
         modal.autoSize();
 
         return modal.show();   
-    }
+    };
 
     Plugin.__addNewDocument = function(type, data, cdata, layoutElement, dorisConfiguration) {
         return this.__buildNewDocumentData(type, data)
@@ -325,7 +325,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
         loadingIcon.hide();
         
         return loadingIcon;
-    }
+    };
 
     Plugin.__triggerSuggestionsUpdate = function(suggestionsMenu, loadingIcon, searchString, data, cdata, layoutElement, dorisConfiguration) {
         if (this.currentTimeout) clearTimeout(this.currentTimeout);
@@ -382,15 +382,15 @@ var CustomDataTypeDoRIS = (function(superClass) {
         }
 
         return query + ';';
-    }
+    };
 
     Plugin.__increment = function(number) {
         return (parseInt(number) + 1).toString();
-    }
+    };
 
     Plugin.__decrement = function(number) {
         return (parseInt(number) - 1).toString();
-    }
+    };
 
     Plugin.__prepareSearchString = function(searchString) {
         if (!searchString) return undefined;
@@ -432,7 +432,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
             text: '',
             icon: new CUI.Icon({ class: 'fa-ellipsis-v' }),
             class: 'pluginDirectSelectEditSearchFylr',
-            onClick: () => this.__openActionsMenu(cdata, menuElement)
+            onClick: () => this.__openActionsMenu(cdata, menuElement, dorisConfiguration)
         });
 
         const menuElement = this.__getActionsMenu(data, cdata, menuButtonElement, layoutElement, dorisConfiguration);
@@ -461,9 +461,13 @@ var CustomDataTypeDoRIS = (function(superClass) {
         };
     };
 
-    Plugin.__openActionsMenu = function(cdata, menuElement) {
+    Plugin.__openActionsMenu = function(cdata, menuElement, dorisConfiguration) {
         menuElement.getItemList().getItems().done(items => {
-            items.forEach(item => item.disabled = !this.__isValidData(cdata));
+            items.forEach(item => {
+                item.disabled = !this.__isValidData(cdata)
+                    || !dorisConfiguration.username
+                    || !dorisConfiguration.password;
+            });
             menuElement.show();
         });
     };
@@ -718,7 +722,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
         return documentData.type.organization_unit?.length
             ? documentData.type.organization_unit
             : dorisConfiguration.organizationUnit;
-    }
+    };
 
     Plugin.__performGetRequest = function(url) {
         return fetch(url, {
