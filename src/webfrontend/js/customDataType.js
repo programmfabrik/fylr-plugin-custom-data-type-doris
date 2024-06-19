@@ -328,6 +328,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
     };
 
     Plugin.__triggerSuggestionsUpdate = function(suggestionsMenu, loadingIcon, searchString, data, cdata, layoutElement, dorisConfiguration) {
+        if (!dorisConfiguration.username || !dorisConfiguration.password) return;
         if (this.currentTimeout) clearTimeout(this.currentTimeout);
         this.currentTimeout = setTimeout(() => {
             loadingIcon.show();
