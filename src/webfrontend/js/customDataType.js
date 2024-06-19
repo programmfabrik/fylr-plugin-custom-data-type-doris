@@ -293,6 +293,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
             class: 'pluginDirectSelectEditInput',
             undo_and_changed_support: false,
             content_size: false,
+            disabled: !this.__hasLoginData(dorisConfiguration),
             onKeyup: input => {
                 this.__triggerSuggestionsUpdate(
                     suggestionsMenu, loadingIcon, input.getValueForInput(), data, cdata, layoutElement, dorisConfiguration
@@ -329,7 +330,6 @@ var CustomDataTypeDoRIS = (function(superClass) {
     };
 
     Plugin.__triggerSuggestionsUpdate = function(suggestionsMenu, loadingIcon, searchString, data, cdata, layoutElement, dorisConfiguration) {
-        if (!this.__hasLoginData(dorisConfiguration)) return;
         if (this.currentTimeout) clearTimeout(this.currentTimeout);
         this.currentTimeout = setTimeout(() => {
             loadingIcon.show();
