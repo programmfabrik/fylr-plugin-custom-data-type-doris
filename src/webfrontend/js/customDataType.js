@@ -149,7 +149,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
                 type: CUI.Select,
                 name: 'type',
                 form: {
-                    label: $$('custom.data.type.doris.field.typ')
+                    label: $$('custom.data.type.doris.field.type')
                 },
                 options: types.map(type => { return { text: type.name, value: type.id }; })
             }]

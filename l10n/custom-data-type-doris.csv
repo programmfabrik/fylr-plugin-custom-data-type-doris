@@ -4,11 +4,7 @@ custom.data.type.doris.buttonMenu.detailInfo,Detailinfo,Detail info
 custom.data.type.doris.buttonMenu.edit,Bearbeiten,Edit
 custom.data.type.doris.buttonMenu.delete,Löschen,Delete
 custom.data.type.doris.field.documentReference,Aktenzeichen,Document reference
-custom.data.type.doris.field.az,Aktenzeichen,File number
-custom.data.type.doris.field.gz3,GZ3,GZ3
-custom.data.type.doris.field.typ,Typ,Type
-custom.data.type.doris.field.typ.options.default,Akte,Akte
-custom.data.type.doris.field.typ.options.other,Anderer Typ,Other type
+custom.data.type.doris.field.type,Typ,Type
 custom.data.type.doris.field.content,Inhalt,Content
 custom.data.type.doris.field.lastChangeDate,Datum der letzten Änderung,Last change date
 custom.data.type.doris.field.lastChangeDate.suffix,Uhr,
