@@ -505,10 +505,10 @@ var CustomDataTypeDoRIS = (function(superClass) {
 
     Plugin.__getDetailInfoContent = function(cdata, dorisConfiguration) {
         return this.__getDoRISDocument('ROWNUMBER: ' + cdata.id + ';', dorisConfiguration).then(data => {
-            return '<h5>DoRIS:' + cdata.id + '</h5>'
+            return '<h5>' + $$('custom.data.type.doris.field.dorisId') + ': ' + cdata.id + '</h5>'
             + '<div><b>' + $$('custom.data.type.doris.field.documentReference') + ': </b>'
                 + data.documentReference + '</div>'
-            + '<div><b>' + $$('custom.data.type.doris.field.typ') + ': </b>'
+            + '<div><b>' + $$('custom.data.type.doris.field.type') + ': </b>'
                 + cdata.typ + '</div>'
             + '<div><b>' + $$('custom.data.type.doris.field.content') + ': </b>'
                 + data.content + '</div>'
