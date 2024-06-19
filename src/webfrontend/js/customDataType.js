@@ -100,6 +100,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
             text: '',
             icon: new CUI.Icon({ class: 'fa-plus' }),
             class: 'pluginDirectSelectEditSearchFylr create-document-button',
+            disabled: !dorisConfiguration.username || !dorisConfiguration.password,
             onClick: () => this.__openCreateDocumentModal(data, cdata, layoutElement, dorisConfiguration)
         });
     };
