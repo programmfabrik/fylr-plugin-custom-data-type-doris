@@ -506,6 +506,8 @@ var CustomDataTypeDoRIS = (function(superClass) {
     Plugin.__getDetailInfoContent = function(cdata, dorisConfiguration) {
         return this.__getDoRISDocument('ROWNUMBER: ' + cdata.id + ';', dorisConfiguration).then(data => {
             return '<h5>DoRIS:' + cdata.id + '</h5>'
+            + '<div><b>' + $$('custom.data.type.doris.field.documentReference') + ': </b>'
+                + data.documentReference + '</div>'
             + '<div><b>' + $$('custom.data.type.doris.field.typ') + ': </b>'
                 + cdata.typ + '</div>'
             + '<div><b>' + $$('custom.data.type.doris.field.content') + ': </b>'
@@ -649,7 +651,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
     };
 
     Plugin.__getDoRISDocument = function(query, dorisConfiguration) {
-        const fieldNames = ['ROWNUMBER', 'GUID', 'AKTENTYP', 'AKTEINH', 'AENDAM', 'AENDUM'];
+        const fieldNames = ['ROWNUMBER', 'GUID', 'GZ2', 'AKTENTYP', 'AKTEINH', 'AENDAM', 'AENDUM'];
 
         const params = new URLSearchParams({
             username: dorisConfiguration.username,
@@ -667,10 +669,11 @@ var CustomDataTypeDoRIS = (function(superClass) {
             return {
                 id: documentValues[0],
                 guid: documentValues[1],
-                type: documentValues[2],
-                content: documentValues[3],
-                changeDate: documentValues[4],
-                changeTime: documentValues[5]
+                documentReference: documentValues[2],
+                type: documentValues[3],
+                content: documentValues[4],
+                changeDate: documentValues[5],
+                changeTime: documentValues[6]
             };
         });
     };

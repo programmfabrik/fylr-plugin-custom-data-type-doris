@@ -3,6 +3,7 @@ custom.data.type.doris.name,DoRIS,DoRIS
 custom.data.type.doris.buttonMenu.detailInfo,Detailinfo,Detail info
 custom.data.type.doris.buttonMenu.edit,Bearbeiten,Edit
 custom.data.type.doris.buttonMenu.delete,Löschen,Delete
+custom.data.type.doris.field.documentReference,Aktenzeichen,Document reference
 custom.data.type.doris.field.az,Aktenzeichen,File number
 custom.data.type.doris.field.gz3,GZ3,GZ3
 custom.data.type.doris.field.typ,Typ,Type
