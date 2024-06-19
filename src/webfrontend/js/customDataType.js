@@ -100,7 +100,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
             text: '',
             icon: new CUI.Icon({ class: 'fa-plus' }),
             class: 'pluginDirectSelectEditSearchFylr create-document-button',
-            disabled: !dorisConfiguration.username || !dorisConfiguration.password,
+            disabled: !this.__hasLoginData(dorisConfiguration),
             onClick: () => this.__openCreateDocumentModal(data, cdata, layoutElement, dorisConfiguration)
         });
     };
@@ -329,7 +329,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
     };
 
     Plugin.__triggerSuggestionsUpdate = function(suggestionsMenu, loadingIcon, searchString, data, cdata, layoutElement, dorisConfiguration) {
-        if (!dorisConfiguration.username || !dorisConfiguration.password) return;
+        if (!this.__hasLoginData(dorisConfiguration)) return;
         if (this.currentTimeout) clearTimeout(this.currentTimeout);
         this.currentTimeout = setTimeout(() => {
             loadingIcon.show();
@@ -464,12 +464,9 @@ var CustomDataTypeDoRIS = (function(superClass) {
     };
 
     Plugin.__openActionsMenu = function(cdata, menuElement, dorisConfiguration) {
+        const disabled = !this.__isValidData(cdata) || !this.__hasLoginData(dorisConfiguration);
         menuElement.getItemList().getItems().done(items => {
-            items.forEach(item => {
-                item.disabled = !this.__isValidData(cdata)
-                    || !dorisConfiguration.username
-                    || !dorisConfiguration.password;
-            });
+            items.forEach(item => item.disabled = disabled);
             menuElement.show();
         });
     };
@@ -782,6 +779,10 @@ var CustomDataTypeDoRIS = (function(superClass) {
 
     Plugin.__getBaseConfiguration = function() {
         return ez5.session.getBaseConfig('plugin', 'custom-data-type-doris')['doris'];
+    };
+
+    Plugin.__hasLoginData = function(dorisConfiguration) {
+        return dorisConfiguration.username && dorisConfiguration.password;
     };
 
     Plugin.__showErrorMessage = function(errorId) {
