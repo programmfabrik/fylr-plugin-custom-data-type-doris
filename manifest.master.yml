@@ -43,4 +43,7 @@ base_config:
           - name: organization_unit
             type: text
             position: 2
+          - name: access
+            type: text
+            position: 3
         position: 1

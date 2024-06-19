@@ -698,7 +698,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
             AENDNAME: dorisConfiguration.fullName,
             AENDAM: documentData.creationDate,
             AENDUM: documentData.creationTime,
-            ACCESS: 'NLD' // TODO Remove?
+            ACCESS: documentData.type.access
         };
 
         const requestData = {

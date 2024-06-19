@@ -35,3 +35,4 @@ server.config.parameter.system.doris.types.label,Typen,Types
 server.config.parameter.system.doris.types.id.label,ID,ID
 server.config.parameter.system.doris.types.name.label,Name,Name
 server.config.parameter.system.doris.types.organization_unit.label,Organisationseinheit,Organization unit
+server.config.parameter.system.doris.types.access.label,Access-Code,Access code
