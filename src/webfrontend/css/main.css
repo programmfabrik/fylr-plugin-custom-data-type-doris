@@ -11,9 +11,13 @@
   border-right: 1px solid #ededed !important;
 }
 
-.doris-plugin-modal-pane input {
-  width: 300px;
-  max-width: 300px !important;
+.doris-plugin-create-document-modal {
+  width: 450px;
+}
+
+.doris-plugin-create-document-modal .cui-form-key {
+  width: 70px;
+  min-width: 70px;
 }
 
 .doris-plugin-detail-info-tooltip {

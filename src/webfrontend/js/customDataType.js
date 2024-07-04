@@ -112,7 +112,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
         const modal = new CUI.Modal({
             pane: {
                 content: this.__getCreateDocumentForm(types, inputData),
-                class: 'doris-plugin-modal-pane',
+                class: 'doris-plugin-create-document-modal',
                 header_left: new CUI.Label({ text: $$('custom.data.type.doris.createDocument.header') }),
                 footer_right: [
                     new CUI.Button({
@@ -148,6 +148,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
             data: inputData,
             fields: [{
                 type: CUI.Select,
+                class: 'doris-plugin-type-select',
                 name: 'type',
                 form: {
                     label: $$('custom.data.type.doris.field.type')
@@ -161,8 +162,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
         const modal = new CUI.Modal({
             pane: {
                 header_left: new CUI.Label({ text: $$('custom.data.type.doris.createDocument.header') }),
-                content: new CUI.Label({ icon: 'spinner', text: $$('custom.data.type.doris.creationInProgress.info') }),
-                class: 'doris-plugin-modal-pane',
+                content: new CUI.Label({ icon: 'spinner', text: $$('custom.data.type.doris.creationInProgress.info') })
             }
         });
 
@@ -793,7 +793,6 @@ var CustomDataTypeDoRIS = (function(superClass) {
                     text: $$('custom.data.type.doris.error.' + errorId + '.message'),
                     multiline: true
                 }),
-                class: 'doris-plugin-modal-pane',
                 footer_right: [
                     new CUI.Button({
                         text: $$('custom.data.type.doris.ok'),
