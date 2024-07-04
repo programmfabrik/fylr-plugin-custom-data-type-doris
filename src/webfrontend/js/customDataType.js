@@ -66,14 +66,22 @@ var CustomDataTypeDoRIS = (function(superClass) {
         const cdata = this.initData(data);
 
         if (this.__isValidData(cdata)) {
-            const container = CUI.dom.div();
-            CUI.dom.append(container, new CUI.Label({ text: this.__getDocumentLabel(cdata) }));
-            CUI.dom.append(container, this.__getDetailInfoIconButton(cdata, this.__getDoRISConfiguration()));
-            return container;
+            return this.__getDocumentEntry(cdata, this.__getDoRISConfiguration());
         } else {
             return new CUI.EmptyLabel({ text: $$('custom.data.type.doris.edit.invalidEntry') });
         }
     };
+
+    Plugin.__getDocumentEntry = function(cdata, dorisConfiguration) {
+        const container = CUI.dom.div();
+
+        CUI.dom.append(container, new CUI.Label({ text: this.__getDocumentLabel(cdata) }));
+        if (this.__hasLoginData(dorisConfiguration)) {
+            CUI.dom.append(container, this.__getDetailInfoIconButton(cdata, dorisConfiguration));
+        }
+
+        return container;
+    }
 
     Plugin.__getDetailInfoIconButton = function(cdata, dorisConfiguration) {
         return new CUI.ButtonHref({
