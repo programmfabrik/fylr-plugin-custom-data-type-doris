@@ -31,6 +31,7 @@ server.config.name.system.doris,DoRIS,DoRIS
 server.config.parameter.system.doris.url.label,URL,URL
 server.config.parameter.system.doris.types.label,Typen,Types
 server.config.parameter.system.doris.types.id.label,ID,ID
-server.config.parameter.system.doris.types.name.label,Name,Name
+server.config.parameter.system.doris.types.label.label,Anzeigename in der Auswahlliste,Display name in selection list
+server.config.parameter.system.doris.types.name.label,Bezeichnung in DoRIS,Name in DoRIS
 server.config.parameter.system.doris.types.organization_unit.label,Organisationseinheit,Organization unit
 server.config.parameter.system.doris.types.access.label,Access-Code,Access code

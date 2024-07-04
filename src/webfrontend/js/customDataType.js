@@ -152,7 +152,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
                 form: {
                     label: $$('custom.data.type.doris.field.type')
                 },
-                options: types.map(type => { return { text: type.name, value: type.id }; })
+                options: types.map(type => { return { text: type.label, value: type.id }; })
             }]
         }).start();
     };

@@ -37,13 +37,16 @@ base_config:
           - name: id
             type: text
             position: 0
-          - name: name
+          - name: label
             type: text
             position: 1
-          - name: organization_unit
+          - name: name
             type: text
             position: 2
-          - name: access
+          - name: organization_unit
             type: text
             position: 3
+          - name: access
+            type: text
+            position: 4
         position: 1
