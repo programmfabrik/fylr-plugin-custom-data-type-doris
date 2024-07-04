@@ -20,6 +20,21 @@
   min-width: 70px;
 }
 
+.doris-plugin-detail-info-icon {
+  position: relative;
+  bottom: 1px;
+  margin-left: 7px;
+}
+
+.doris-plugin-detail-info-icon .cui-button-visual {
+  width: 10px;
+  min-width: 10px;
+}
+
+.doris-plugin-detail-info-icon:active .cui-button-visual {
+  box-shadow: none !important;
+}
+
 .doris-plugin-detail-info-tooltip {
   padding: 10px;
 }

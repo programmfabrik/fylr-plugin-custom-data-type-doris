@@ -66,10 +66,22 @@ var CustomDataTypeDoRIS = (function(superClass) {
         const cdata = this.initData(data);
 
         if (this.__isValidData(cdata)) {
-            return new CUI.Label({ text: this.__getDocumentLabel(cdata) });
+            const container = CUI.dom.div();
+            CUI.dom.append(container, new CUI.Label({ text: this.__getDocumentLabel(cdata) }));
+            CUI.dom.append(container, this.__getDetailInfoIconButton(cdata, this.__getDoRISConfiguration()));
+            return container;
         } else {
             return new CUI.EmptyLabel({ text: $$('custom.data.type.doris.edit.invalidEntry') });
         }
+    };
+
+    Plugin.__getDetailInfoIconButton = function(cdata, dorisConfiguration) {
+        return new CUI.ButtonHref({
+            class: 'doris-plugin-detail-info-icon',
+            text: '',
+            icon: new CUI.Icon({ class: 'fa-info-circle' }),
+            onClick: (_, buttonElement) => this.__openDetailInfoTooltip(cdata, buttonElement, dorisConfiguration)
+        });
     };
 
     Plugin.renderEditorInput = function(data, top_level_data, opts) {
@@ -477,11 +489,11 @@ var CustomDataTypeDoRIS = (function(superClass) {
             value: 'detail',
             icon_left: new CUI.Icon({ class: 'fa-info-circle' }),
             onClick: (_, buttonElement) =>
-                this.__openDetailInfoTooltip(cdata, buttonElement, menuElement, dorisConfiguration)
+                this.__openDetailInfoTooltip(cdata, buttonElement, dorisConfiguration, menuElement)
         };
     };
 
-    Plugin.__openDetailInfoTooltip = function(cdata, buttonElement, menuElement, dorisConfiguration) {
+    Plugin.__openDetailInfoTooltip = function(cdata, buttonElement, dorisConfiguration, menuElement) {
         const tooltip = new CUI.Tooltip({
             element: buttonElement,
             class: 'doris-plugin-detail-info-tooltip',
@@ -497,7 +509,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
             node: buttonElement,
             capture: true,
             only_once: true,
-            call: () => menuElement.hide()
+            call: () => menuElement ? menuElement.hide() : tooltip.hide()
         });
 
         this.__getDetailInfoContent(cdata, dorisConfiguration).then(content => {
