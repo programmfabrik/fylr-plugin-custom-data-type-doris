@@ -57,7 +57,8 @@ var CustomDataTypeDoRIS = (function(superClass) {
         } else {
             save_data[this.name()] = {
                 id: data[this.name()].id,
-                typ: data[this.name()].typ
+                type: data[this.name()].type,
+                fileType: data[this.name()].fileType
             };
         }
     };
@@ -196,7 +197,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
             .then(newDocumentData => {
                 return this.__createDocument(newDocumentData, dorisConfiguration);
             }).then(result => {
-                if (result) this.__addEntry(result.id, result.type, data, cdata, layoutElement, dorisConfiguration);
+                if (result) this.__addEntry(result.id, 'Akte', result.type, data, cdata, layoutElement, dorisConfiguration);
             });
     };
 
@@ -381,10 +382,14 @@ var CustomDataTypeDoRIS = (function(superClass) {
         const query = this.__getSuggestionsQuery(searchString);
         if (!query) return Promise.resolve([]);
         
-        return this.__getDoRISQueryResult(query, ['ROWNUMBER', 'AKTENTYP'], dorisConfiguration).then(data => {
+        return this.__getDoRISQueryResult(query, ['ROWNUMBER', 'TYP', 'AKTENTYP'], dorisConfiguration).then(data => {
             return data
                 ? data.map(documentValues => {
-                    return { id: documentValues[0], typ: documentValues[1] };
+                    return {
+                        id: documentValues[0],
+                        type: documentValues[1],
+                        fileType: documentValues[2]
+                    };
                 }) : [];
         });
     };
@@ -437,7 +442,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
             keyboardControl: true,
             onClick: (_, button) => {
                 const value = button.getOpt('value');
-                this.__addEntry(value.id, value.typ, data, cdata, layoutElement, dorisConfiguration);
+                this.__addEntry(value.id, value.type, value.fileType, data, cdata, layoutElement, dorisConfiguration);
                 suggestionsMenu.hide();
             }
         };
@@ -532,7 +537,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
             + '<div><b>' + $$('custom.data.type.doris.field.documentReference') + ': </b>'
                 + data.documentReference + '</div>'
             + '<div><b>' + $$('custom.data.type.doris.field.type') + ': </b>'
-                + cdata.typ + '</div>'
+                + (cdata.fileType ?? cdata.type) + '</div>'
             + '<div><b>' + $$('custom.data.type.doris.field.content') + ': </b>'
                 + data.content + '</div>'
             + '<div><b>' + $$('custom.data.type.doris.field.lastChangeDate') + ': </b>'
@@ -567,9 +572,10 @@ var CustomDataTypeDoRIS = (function(superClass) {
         };
     };
 
-    Plugin.__addEntry = function(id, typ, data, cdata, layoutElement, dorisConfiguration) {
+    Plugin.__addEntry = function(id, type, fileType, data, cdata, layoutElement, dorisConfiguration) {
         cdata.id = id;
-        cdata.typ = typ;
+        cdata.type = type;
+        cdata.fileType = fileType;
         cdata._fulltext = { text: id };
         cdata._standard = { text: id };
 
@@ -579,7 +585,8 @@ var CustomDataTypeDoRIS = (function(superClass) {
 
     Plugin.__deleteEntry = function(cdata, layoutElement) {
         delete cdata.id;
-        delete cdata.typ;
+        delete cdata.type;
+        delete cdata.fileType;
         delete cdata._fulltext;
         delete cdata._standard;
 
@@ -599,11 +606,11 @@ var CustomDataTypeDoRIS = (function(superClass) {
     };
 
     Plugin.__isValidData = function(cdata) {
-        return cdata?.id && cdata?.typ;
+        return cdata?.id && cdata?.type;
     };
 
     Plugin.__getDocumentLabel = function(document) {
-        return 'DoRIS:' + document.id + ' (' + document.typ + ')';
+        return 'DoRIS:' + document.id + ' (' + (document.fileType ?? document.type) + ')';
     };
 
     Plugin.__createDocument = function(newDocumentData, dorisConfiguration) {
@@ -674,7 +681,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
     };
 
     Plugin.__getDoRISDocument = function(query, dorisConfiguration) {
-        const fieldNames = ['ROWNUMBER', 'GUID', 'GZ2', 'AKTENTYP', 'AKTEINH', 'AENDAM', 'AENDUM'];
+        const fieldNames = ['ROWNUMBER', 'GZ2', 'AKTEINH', 'AENDAM', 'AENDUM'];
 
         const params = new URLSearchParams({
             username: dorisConfiguration.username,
@@ -691,12 +698,10 @@ var CustomDataTypeDoRIS = (function(superClass) {
 
             return {
                 id: documentValues[0],
-                guid: documentValues[1],
-                documentReference: documentValues[2],
-                type: documentValues[3],
-                content: documentValues[4],
-                changeDate: documentValues[5],
-                changeTime: documentValues[6]
+                documentReference: documentValues[1],
+                content: documentValues[2],
+                changeDate: documentValues[3],
+                changeTime: documentValues[4]
             };
         });
     };
