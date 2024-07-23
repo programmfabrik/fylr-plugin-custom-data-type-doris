@@ -21,6 +21,7 @@ custom.data.type.doris.error.dorisUpdateFailure.title,Aktenerstellung fehlgeschl
 custom.data.type.doris.error.dorisUpdateFailure.message,Die Akte konnte in DoRIS nicht angelegt werden.,The document could not be created in DoRIS.
 custom.data.type.doris.error.dorisReadNewDocumentFailure.title,Aktenerstellung fehlgeschlagen,Could not create document
 custom.data.type.doris.error.dorisReadNewDocumentFailure.message,Die in DoRIS neu angelegte Akte konnte nicht gelesen werden.,The document newly created in DoRIS could not be read.
+custom.data.type.doris.edit.invalidEntry,Ungültiger Eintrag,Invalid entry
 userPlugin.doris.username.label,Username,User name
 userPlugin.doris.username.hint,Der Username des DoRIS-Accounts,The user name of the DoRIS account
 userPlugin.doris.password.label,Passwort,Password
