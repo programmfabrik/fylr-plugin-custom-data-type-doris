@@ -747,22 +747,6 @@ var CustomDataTypeDoRIS = (function(superClass) {
     };
 
     Plugin.__performGetRequest = function(url) {
-        if (!this.timeoutLength) this.timeoutLength = 1000;
-        console.log('Get request:')
-        console.log('URL:', url);
-        if (url.includes('getDocument')) {
-            return Promise.resolve(['1234567', 'AZ-777', 'Inhalt', '12.03.2024', '12:04']);
-        } else if (url.includes('ROWNUMBER')) {
-            const number = this.timeoutLength;
-            return new Promise((resolve, reject) => {
-                setTimeout(() => resolve([[number.toString(), 'Akte', 'Geheimakte'], ['1234567', 'Akte', 'Andere Akte'], ['2345677', 'Vorgang']]), this.timeoutLength);
-                this.timeoutLength -= 4000;
-                if (this.timeoutLength < 1000) this.timeoutLength = 1000;
-            });
-        } else if (!url.includes('dante')) {
-            return Promise.resolve([['20']]);
-        }
-
         return fetch(url, {
             method: 'GET',
         }).then(response => {
@@ -781,11 +765,6 @@ var CustomDataTypeDoRIS = (function(superClass) {
     };
 
     Plugin.__performPostRequest = function(url, requestData) {
-        console.log('Post request:')
-        console.log('URL:', url);
-        console.log('requestData:', requestData);
-        return Promise.resolve({ success: 'ok' });
-
         return fetch(url, {
             method: 'POST',
             headers: {
