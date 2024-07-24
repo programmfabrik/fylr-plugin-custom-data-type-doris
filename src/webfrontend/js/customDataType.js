@@ -608,7 +608,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
     };
 
     Plugin.__getDocumentLabel = function(document) {
-        return 'DoRIS:' + document.id + ' (' + (document.fileType ?? document.type) + ')';
+        return 'DoRIS:' + document.id + ' (' + (document.fileType?.length ? document.fileType : document.type) + ')';
     };
 
     Plugin.__createDocument = function(newDocumentData, dorisConfiguration) {
