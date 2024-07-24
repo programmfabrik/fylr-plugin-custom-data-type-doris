@@ -750,12 +750,11 @@ var CustomDataTypeDoRIS = (function(superClass) {
         return fetch(url, {
             method: 'GET',
         }).then(response => {
-            if (!response.ok) {
-                console.error(response.status);
-                return undefined;
-            }
+            if (!response.ok) console.error(response.status);
+            if (response.status !== 200) return 'noResults';
             return response.arrayBuffer();
         }).then(buffer => {
+            if (buffer === 'noResults') return [];
             const decodedText = new TextDecoder('iso-8859-1').decode(buffer);
             return JSON.parse(decodedText);
         }).catch(err => {
