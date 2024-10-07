@@ -9,6 +9,8 @@ custom.data.type.doris.field.type,Typ,Type
 custom.data.type.doris.field.content,Inhalt,Content
 custom.data.type.doris.field.lastChangeDate,Datum der letzten Änderung,Last change date
 custom.data.type.doris.field.lastChangeDate.suffix,Uhr,
+custom.data.type.doris.search.placeholder,DoRIS-ID,DoRIS ID
+custom.data.type.doris.search.badge.without,Ohne,Without
 custom.data.type.doris.createDocument.header,Neue DoRIS-Akte anlegen,Create new DoRIS document
 custom.data.type.doris.createDocument.confirm,Erstellen,Create
 custom.data.type.doris.createDocument.cancel,Abbrechen,Cancel
