@@ -265,14 +265,15 @@ var CustomDataTypeDoRIS = (function(superClass) {
     };
 
     Plugin.__getNewDocumentContent = function(data) {
-        return this.__getRegion(data).then(region => {
+        const objectType = this.__getObjectType();
+        return this.__getRegion(data, objectType).then(region => {
             const cityDistrict = this.__getListValueFromObjectData(
-                data, '_nested:item__politische_zugehoerigkeit', 'stadtteil'
+                data, objectType, '_nested:' + objectType + '__politische_zugehoerigkeit', 'stadtteil'
             ) || '?';
-            const street = this.__getListValueFromObjectData(data, '_nested:item__anschrift', 'strasse') || '?';
-            const buildingNumber = this.__getListValueFromObjectData(data, '_nested:item__anschrift', 'hausnummer') || '?';
+            const street = this.__getListValueFromObjectData(data, objectType, '_nested:' + objectType + '__anschrift', 'strasse') || '?';
+            const buildingNumber = this.__getListValueFromObjectData(data, objectType, '_nested:' + objectType + '__anschrift', 'hausnummer') || '?';
             const type = data.lk_objekttyp?.conceptName || '?';
-            const title = this.__getListValueFromObjectData(data, '_nested:item__titel', 'titel') || '?';
+            const title = this.__getListValueFromObjectData(data, objectType, '_nested:' + objectType + '__titel', 'titel') || '?';
 
             return (region || '?') + ', '
                 + cityDistrict + ', '
@@ -282,9 +283,9 @@ var CustomDataTypeDoRIS = (function(superClass) {
         });
     };
 
-    Plugin.__getRegion = function(data) {
+    Plugin.__getRegion = function(data, objectType) {
         const danteEntry = this.__getListValueFromObjectData(
-            data, '_nested:item__politische_zugehoerigkeit', 'lk_politische_zugehoerigkeit'
+            data, objectType, '_nested:' + objectType + '__politische_zugehoerigkeit', 'lk_politische_zugehoerigkeit'
         );
 
         return this.__getDanteConcept(danteEntry?.conceptURI).then(danteConcept => {
@@ -292,9 +293,9 @@ var CustomDataTypeDoRIS = (function(superClass) {
         });
     };
 
-    Plugin.__getListValueFromObjectData = function(data, fieldName, subfieldName) {
-        return data['item']?.[fieldName]?.length
-            ? data['item'][fieldName][0][subfieldName]
+    Plugin.__getListValueFromObjectData = function(data, objectType, fieldName, subfieldName) {
+        return data[objectType]?.[fieldName]?.length
+            ? data[objectType][fieldName][0][subfieldName]
             : undefined;
     };
 
@@ -884,6 +885,13 @@ var CustomDataTypeDoRIS = (function(superClass) {
     Plugin.__closeModal = function(modal) {
         modal.hide();
         modal.destroy();
+    };
+
+    Plugin.__getObjectType = function() {
+        const path = this.path();
+        return path.includes('.')
+            ? path.slice(0, path.indexOf('.'))
+            : path;
     };
 
     return CustomDataTypeDoRIS;
