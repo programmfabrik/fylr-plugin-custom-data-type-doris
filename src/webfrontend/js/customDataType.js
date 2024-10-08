@@ -143,7 +143,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
         });
     };
 
-    Plugin.renderEditorInput = function(data, top_level_data, opts) {
+    Plugin.renderEditorInput = function(data, topLevelData, opts) {
         const cdata = this.initData(data);
 
         const layoutElement = new CUI.HorizontalLayout({
@@ -153,7 +153,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
             right: {}
         });
 
-        this.__updateEditorInput(top_level_data, cdata, layoutElement, this.__getDoRISConfiguration());
+        this.__updateEditorInput(topLevelData, cdata, layoutElement, this.__getDoRISConfiguration());
 
         return layoutElement;
     };
@@ -293,8 +293,8 @@ var CustomDataTypeDoRIS = (function(superClass) {
     };
 
     Plugin.__getListValueFromObjectData = function(data, fieldName, subfieldName) {
-        return data[fieldName]?.length
-            ? data[fieldName][0][subfieldName]
+        return data['item']?.[fieldName]?.length
+            ? data['item'][fieldName][0][subfieldName]
             : undefined;
     };
 
