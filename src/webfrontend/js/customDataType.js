@@ -187,7 +187,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
                 header_left: new CUI.Label({ text: $$('custom.data.type.doris.createDocument.header') }),
                 footer_right: [
                     new CUI.Button({
-                        text: $$('custom.data.type.doris.createDocument.cancel'),
+                        text: $$('custom.data.type.doris.cancel'),
                         class: 'cui-dialog',
                         onClick: () => this.__closeModal(modal)
                     }),
@@ -200,7 +200,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
                             this.__closeModal(modal);
 
                             const creationInProgressModal = this.__openCreationInProgressModal();
-                            this.__addNewDocument(selectedType, data, cdata, layoutElement, dorisConfiguration).finally(() => {
+                            this.__startDocumentCreation(selectedType, data, cdata, layoutElement, dorisConfiguration).finally(() => {
                                 this.__closeModal(creationInProgressModal);
                             });
                         }
@@ -242,17 +242,52 @@ var CustomDataTypeDoRIS = (function(superClass) {
         return modal.show();   
     };
 
-    Plugin.__addNewDocument = function(type, data, cdata, layoutElement, dorisConfiguration) {
-        return this.__createDocument(this.__buildNewDocumentData(type, data), dorisConfiguration)
+    Plugin.__startDocumentCreation = function(type, data, cdata, layoutElement, dorisConfiguration) {
+        const { content, emptyFields } = this.__getNewDocumentContent(data);
+        if (emptyFields.length) {
+            return this.__showEmptyFieldsWarning(type, data, cdata, layoutElement, dorisConfiguration, content, emptyFields);
+        } else {
+            return this.__addNewDocument(type, data, cdata, layoutElement, dorisConfiguration, content);
+        }
+    };
+
+    Plugin.__addNewDocument = function(type, data, cdata, layoutElement, dorisConfiguration, content) {
+        return this.__createDocument(this.__buildNewDocumentData(type, content), dorisConfiguration)
             .then(result => {
                 if (result) this.__addEntry(result.id, 'Akte', result.type, data, cdata, layoutElement, dorisConfiguration);
             });
     };
 
-    Plugin.__buildNewDocumentData = function(type, data) {
+    Plugin.__showEmptyFieldsWarning = function(type, data, cdata, layoutElement, dorisConfiguration, content, emptyFields) {
+        return new Promise((resolve, reject) => {
+            const modalDialog = new CUI.ConfirmationDialog({
+                title: $$('custom.data.type.doris.emptyFields.modal.title'),
+                text: $$('custom.data.type.doris.emptyFields.modal.text') + ' ' + emptyFields.join(', '),
+                cancel: false,
+                buttons: [{
+                    text: $$('custom.data.type.doris.cancel'),
+                    onClick: () => {
+                        modalDialog.destroy();
+                        reject();
+                    }
+                }, {
+                    text: $$('custom.data.type.doris.ok'),
+                    primary: true,
+                    onClick: () => {
+                        modalDialog.destroy();
+                        this.__addNewDocument(type, data, cdata, layoutElement, dorisConfiguration, content).then(() => resolve());
+                    }
+                }]
+            });
+            
+            modalDialog.show();
+        });
+    };
+
+    Plugin.__buildNewDocumentData = function(type, content) {
         return {
             type,
-            content: this.__getNewDocumentContent(data),
+            content,
             guid: this.__createGuid(),
             creationYear: new Date().getFullYear().toString(),
             creationDate: this.__getCurrentDate(),
@@ -265,17 +300,30 @@ var CustomDataTypeDoRIS = (function(superClass) {
         const region = this.__getRegion(data, objectType);
         const cityDistrict = this.__getListValueFromObjectData(
             data, objectType, '_nested:' + objectType + '__politische_zugehoerigkeit', 'stadtteil'
-        ) || '?';
-        const street = this.__getListValueFromObjectData(data, objectType, '_nested:' + objectType + '__anschrift', 'strasse') || '?';
-        const buildingNumber = this.__getListValueFromObjectData(data, objectType, '_nested:' + objectType + '__anschrift', 'hausnummer') || '?';
-        const type = data.lk_objekttyp?.conceptName || '?';
-        const title = this.__getListValueFromObjectData(data, objectType, '_nested:' + objectType + '__titel', 'titel') || '?';
+        );
+        const street = this.__getListValueFromObjectData(data, objectType, '_nested:' + objectType + '__anschrift', 'strasse');
+        const buildingNumber = this.__getListValueFromObjectData(data, objectType, '_nested:' + objectType + '__anschrift', 'hausnummer');
+        const type = data.lk_objekttyp?.conceptName;
+        const title = this.__getListValueFromObjectData(data, objectType, '_nested:' + objectType + '__titel', 'titel');
 
-        return (region || '?') + ', '
-            + cityDistrict + ', '
-            + street + ' ' + buildingNumber + ', ' 
-            + type + ', '
-            + title;
+        const contentElements = [];
+        const emptyFields = [];
+
+        if (region) contentElements.push(region); else emptyFields.push('Gebietszugehörigkeit');
+        if (cityDistrict) contentElements.push(cityDistrict); else emptyFields.push('Stadtteil / Lagebezeichnung');
+        if (street && buildingNumber) {
+            contentElements.push(street + ' ' + buildingNumber);
+        } else {
+            if (!street) emptyFields.push('Straße');
+            if (!buildingNumber) emptyFields.push('Hausnummer');
+        }
+        if (type) contentElements.push(type); else emptyFields.push('Objekttyp');
+        if (title) contentElements.push(title); else emptyFields.push('Objektbezeichnung');
+
+        return {
+            content: contentElements.join(', '),
+            emptyFields
+        };
     };
 
     Plugin.__getRegion = function(data, objectType) {
