@@ -243,79 +243,61 @@ var CustomDataTypeDoRIS = (function(superClass) {
     };
 
     Plugin.__addNewDocument = function(type, data, cdata, layoutElement, dorisConfiguration) {
-        return this.__buildNewDocumentData(type, data)
-            .then(newDocumentData => {
-                return this.__createDocument(newDocumentData, dorisConfiguration);
-            }).then(result => {
+        return this.__createDocument(this.__buildNewDocumentData(type, data), dorisConfiguration)
+            .then(result => {
                 if (result) this.__addEntry(result.id, 'Akte', result.type, data, cdata, layoutElement, dorisConfiguration);
             });
     };
 
     Plugin.__buildNewDocumentData = function(type, data) {
-        return this.__getNewDocumentContent(data).then(content => {
-            return {
-                type,
-                content,
-                guid: this.__createGuid(),
-                creationYear: new Date().getFullYear().toString(),
-                creationDate: this.__getCurrentDate(),
-                creationTime: this.__getCurrentTime()
-            };
-        });
+        return {
+            type,
+            content: this.__getNewDocumentContent(data),
+            guid: this.__createGuid(),
+            creationYear: new Date().getFullYear().toString(),
+            creationDate: this.__getCurrentDate(),
+            creationTime: this.__getCurrentTime()
+        };
     };
 
     Plugin.__getNewDocumentContent = function(data) {
         const objectType = this.__getObjectType();
-        return this.__getRegion(data, objectType).then(region => {
-            const cityDistrict = this.__getListValueFromObjectData(
-                data, objectType, '_nested:' + objectType + '__politische_zugehoerigkeit', 'stadtteil'
-            ) || '?';
-            const street = this.__getListValueFromObjectData(data, objectType, '_nested:' + objectType + '__anschrift', 'strasse') || '?';
-            const buildingNumber = this.__getListValueFromObjectData(data, objectType, '_nested:' + objectType + '__anschrift', 'hausnummer') || '?';
-            const type = data.lk_objekttyp?.conceptName || '?';
-            const title = this.__getListValueFromObjectData(data, objectType, '_nested:' + objectType + '__titel', 'titel') || '?';
+        const region = this.__getRegion(data, objectType);
+        const cityDistrict = this.__getListValueFromObjectData(
+            data, objectType, '_nested:' + objectType + '__politische_zugehoerigkeit', 'stadtteil'
+        ) || '?';
+        const street = this.__getListValueFromObjectData(data, objectType, '_nested:' + objectType + '__anschrift', 'strasse') || '?';
+        const buildingNumber = this.__getListValueFromObjectData(data, objectType, '_nested:' + objectType + '__anschrift', 'hausnummer') || '?';
+        const type = data.lk_objekttyp?.conceptName || '?';
+        const title = this.__getListValueFromObjectData(data, objectType, '_nested:' + objectType + '__titel', 'titel') || '?';
 
-            return (region || '?') + ', '
-                + cityDistrict + ', '
-                + street + ' ' + buildingNumber + ', ' 
-                + type + ', '
-                + title;
-        });
+        return (region || '?') + ', '
+            + cityDistrict + ', '
+            + street + ' ' + buildingNumber + ', ' 
+            + type + ', '
+            + title;
     };
 
     Plugin.__getRegion = function(data, objectType) {
-        const danteEntry = this.__getListValueFromObjectData(
+        const danteConcept = this.__getListValueFromObjectData(
             data, objectType, '_nested:' + objectType + '__politische_zugehoerigkeit', 'lk_politische_zugehoerigkeit'
-        );
+        )?.conceptName;
+        if (!danteConcept) return undefined;
 
-        return this.__getDanteConcept(danteEntry?.conceptURI).then(danteConcept => {
-            return this.__getDanteConceptLabel(danteConcept);
-        });
+        const elements = danteConcept.split(' ➔ ');
+        if (elements.length < 2) return undefined;
+
+        let result = 'Landkreis ' + elements[1];
+        if (elements.length > 2) result += ', Gemeinde ' + elements[2];
+        if (elements.length > 3) result += ', Gemarkung ' + elements[3];
+
+        return result;
     };
 
     Plugin.__getListValueFromObjectData = function(data, objectType, fieldName, subfieldName) {
         return data[objectType]?.[fieldName]?.length
             ? data[objectType][fieldName][0][subfieldName]
             : undefined;
-    };
-
-    Plugin.__getDanteConcept = function(danteURI) {
-        if (!danteURI) return Promise.resolve(undefined);
-
-        const url = 'http://api.dante.gbv.de/data?uri=' + danteURI;
-        return this.__performGetRequest(url).then(result => {
-            return result.length ? result[0] : Promise.resolve(undefined);
-        });
-    };
-
-    Plugin.__getDanteConceptLabel = function(danteConcept) {
-        if (!danteConcept) return Promise.resolve(undefined);
-
-        if (danteConcept.altLabel?.['de'] && danteConcept.altLabel['de'].length) {
-            return danteConcept.altLabel['de'][0];
-        } else {
-            return danteConcept.prefLabel?.['de'];
-        }
     };
 
     Plugin.__createGuid = function() {
