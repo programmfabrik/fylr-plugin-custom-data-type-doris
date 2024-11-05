@@ -296,15 +296,15 @@ var CustomDataTypeDoRIS = (function(superClass) {
     };
 
     Plugin.__getNewDocumentContent = function(data) {
-        const objectType = this.__getObjectType();
-        const region = this.__getRegion(data, objectType);
+        const nestedPrefix = '_nested:' + this.__getObjectType() + '__';
+        const region = this.__getRegion(data, nestedPrefix);
         const cityDistrict = this.__getListValueFromObjectData(
-            data, objectType, '_nested:' + objectType + '__politische_zugehoerigkeit', 'stadtteil'
+            data, nestedPrefix + 'politische_zugehoerigkeit', 'stadtteil'
         );
-        const street = this.__getListValueFromObjectData(data, objectType, '_nested:' + objectType + '__anschrift', 'strasse');
-        const buildingNumber = this.__getListValueFromObjectData(data, objectType, '_nested:' + objectType + '__anschrift', 'hausnummer');
+        const street = this.__getListValueFromObjectData(data, nestedPrefix + 'anschrift', 'strasse');
+        const buildingNumber = this.__getListValueFromObjectData(data, nestedPrefix + 'anschrift', 'hausnummer');
         const type = data.lk_objekttyp?.conceptName;
-        const title = this.__getListValueFromObjectData(data, objectType, '_nested:' + objectType + '__titel', 'titel');
+        const title = this.__getListValueFromObjectData(data, nestedPrefix + 'titel', 'titel');
 
         const contentElements = [];
         const emptyFields = [];
@@ -326,9 +326,9 @@ var CustomDataTypeDoRIS = (function(superClass) {
         };
     };
 
-    Plugin.__getRegion = function(data, objectType) {
+    Plugin.__getRegion = function(data, nestedPrefix) {
         const danteConcept = this.__getListValueFromObjectData(
-            data, objectType, '_nested:' + objectType + '__politische_zugehoerigkeit', 'lk_politische_zugehoerigkeit'
+            data, nestedPrefix + 'politische_zugehoerigkeit', 'lk_politische_zugehoerigkeit'
         )?.conceptName;
         if (!danteConcept) return undefined;
 
@@ -342,9 +342,9 @@ var CustomDataTypeDoRIS = (function(superClass) {
         return result;
     };
 
-    Plugin.__getListValueFromObjectData = function(data, objectType, fieldName, subfieldName) {
-        return data[objectType]?.[fieldName]?.length
-            ? data[objectType][fieldName][0][subfieldName]
+    Plugin.__getListValueFromObjectData = function(data, fieldName, subfieldName) {
+        return data?.[fieldName]?.length
+            ? data[fieldName][0][subfieldName]
             : undefined;
     };
 
