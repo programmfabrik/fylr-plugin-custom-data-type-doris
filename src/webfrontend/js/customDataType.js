@@ -304,7 +304,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
         const street = this.__getListValueFromObjectData(data, nestedPrefix + 'anschrift', 'strasse');
         const buildingNumber = this.__getListValueFromObjectData(data, nestedPrefix + 'anschrift', 'hausnummer');
         const type = data.lk_objekttyp?.conceptName;
-        const title = this.__getListValueFromObjectData(data, nestedPrefix + 'titel', 'titel');
+        const title = this.__getListValueFromObjectData(data, nestedPrefix + 'titel', 'titel', true);
 
         const contentElements = [];
         const emptyFields = [];
@@ -342,9 +342,11 @@ var CustomDataTypeDoRIS = (function(superClass) {
         return result;
     };
 
-    Plugin.__getListValueFromObjectData = function(data, fieldName, subfieldName) {
+    Plugin.__getListValueFromObjectData = function(data, fieldName, subfieldName, allEntries = false) {
         return data?.[fieldName]?.length
-            ? data[fieldName][0][subfieldName]
+            ? allEntries
+                ? data[fieldName].map(entry => entry[subfieldName]).join(', ')
+                : data[fieldName][0][subfieldName]
             : undefined;
     };
 
