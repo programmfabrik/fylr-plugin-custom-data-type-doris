@@ -40,3 +40,4 @@ server.config.parameter.system.doris.types.label.label,Anzeigename in der Auswah
 server.config.parameter.system.doris.types.name.label,Bezeichnung in DoRIS,Name in DoRIS
 server.config.parameter.system.doris.types.organization_unit.label,Organisationseinheit,Organization unit
 server.config.parameter.system.doris.types.access.label,Access-Code,Access code
+server.config.parameter.system.doris.api_fields.label,Vom API-Endpunkt berücksichtigte Felder (inkl. Objekttyp und Pfad),Fields considered by API endpoint (including object type and path)

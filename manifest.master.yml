@@ -50,3 +50,26 @@ base_config:
             type: text
             position: 4
         position: 1
+      api_fields:
+        type: table
+        fields:
+          - name: path
+            type: text
+            position: 0
+        position: 2
+
+extensions:
+  data:
+    exec:
+      service: "node"
+      commands:
+        - prog: "node"
+          stdin:
+            type: "body"
+          stdout:
+            type: "body"
+          args:
+            - type: "value"
+              value: "%_exec.pluginDir%/server/extension/data.js"
+            - type: "value"
+              value: "%info.json%"

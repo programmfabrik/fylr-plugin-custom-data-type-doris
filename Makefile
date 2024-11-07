@@ -8,11 +8,13 @@ build: clean
 	mkdir -p build/$(PLUGIN_NAME)
 	mkdir -p build/$(PLUGIN_NAME)/webfrontend
 	mkdir -p build/$(PLUGIN_NAME)/server
+	mkdir -p build/$(PLUGIN_NAME)/server/extension
 	mkdir -p build/$(PLUGIN_NAME)/l10n
 
 	cp src/webfrontend/js/customDataType.js build/$(PLUGIN_NAME)/webfrontend/$(PLUGIN_NAME).js
 	cat src/webfrontend/js/userPlugin.js >> build/$(PLUGIN_NAME)/webfrontend/${PLUGIN_NAME}.js
 	cp src/webfrontend/css/main.css build/$(PLUGIN_NAME)/webfrontend/${PLUGIN_NAME}.css
+	cp src/server/extension/data.js build/$(PLUGIN_NAME)/server/extension/data.js
 	cp l10n/$(PLUGIN_NAME).csv build/$(PLUGIN_NAME)/l10n/$(PLUGIN_NAME).csv
 
 	cp manifest.master.yml build/$(PLUGIN_NAME)/manifest.yml
