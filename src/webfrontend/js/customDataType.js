@@ -19,10 +19,10 @@ var CustomDataTypeDoRIS = (function(superClass) {
     };
 
     Plugin.isEmpty = function(data, top_level_data, opts={}) {
-        if (data[this.name()]?.id) {
-            return false;
+        if (opts.mode == 'expert') {
+            return CUI.util.isEmpty(data[this.name()]?.trim());
         } else {
-            return true;
+            return !data[this.name()]?.id;
         }
     };
 
