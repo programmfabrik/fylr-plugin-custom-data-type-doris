@@ -19,6 +19,12 @@ base_url_prefix: "webfrontend"
 
 custom_types:
   doris:
+    config:
+      mask:
+        - name: value
+          parameters:
+            value:
+              type: text
     mapping:
       id:
         type: text
