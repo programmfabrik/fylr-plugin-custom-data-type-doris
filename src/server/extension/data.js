@@ -22,8 +22,8 @@ async function handleRequest() {
     const dorisId = info.request.query.id?.[0];
     if (!dorisId) throwError('Missing parameter: id', 'No DoRIS document ID provided');
 
-    const yesId = (await performSearch(['ja_nein_objekttyp.name'], 'Ja'))?.[0]?.ja_nein_objekttyp._id;
-    if (!yesId) throwError('Missing value: Ja', 'ja_nein_objekttyp is not set up correctly in Fylr database');
+    const yesId = (await performSearch(['ja_nein_objekttyp.name'], 'ja'))?.[0]?.ja_nein_objekttyp._id;
+    if (!yesId) throwError('Missing value: ja', 'ja_nein_objekttyp is not set up correctly in Fylr database');
 
     const objects = await performSearch(getFieldPaths(), dorisId);
 
