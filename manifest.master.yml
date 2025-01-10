@@ -55,6 +55,10 @@ base_config:
           - name: access
             type: text
             position: 4
+          - name: permission_group
+            type: select
+            options: ["basic", "full"]
+            position: 5
         position: 1
       api_fields:
         type: table
@@ -77,5 +81,19 @@ extensions:
           args:
             - type: "value"
               value: "%_exec.pluginDir%/server/extension/data.js"
+            - type: "value"
+              value: "%info.json%"
+  credentials:
+    exec:
+      service: "node"
+      commands:
+        - prog: "node"
+          stdin:
+            type: "body"
+          stdout:
+            type: "body"
+          args:
+            - type: "value"
+              value: "%_exec.pluginDir%/server/extension/credentials.js"
             - type: "value"
               value: "%info.json%"

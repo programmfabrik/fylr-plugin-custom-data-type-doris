@@ -19,20 +19,17 @@ var UserPluginDoRIS = (function(superClass) {
 					data: this._user.data.user,
 					name: 'custom_data',
 					fields: [{
-						type: CUI.Input,
-						name: 'doris_username',
+						type: CUI.Select,
+						name: 'doris_permission_group',
 						form: {
-							label: $$('userPlugin.doris.username.label'),
-							hint: $$('userPlugin.doris.username.hint')
-                        }
-                    }, {
-						type: CUI.Input,
-						name: 'doris_password',
-						form: {
-							label: $$('userPlugin.doris.password.label'),
-							hint: $$('userPlugin.doris.password.hint')
-                        }
-                    }, {
+							label: $$('userPlugin.doris.permissionGroup.label')
+                        },
+						options: [
+							{ value: '', text: $$('userPlugin.doris.permissionGroup.none') },
+							{ value: 'basic', text: $$('userPlugin.doris.permissionGroup.basic') },
+							{ value: 'full', text: $$('userPlugin.doris.permissionGroup.full') }
+						]
+					}, {
 						type: CUI.Input,
 						name: 'doris_organization_unit',
 						form: {
@@ -50,6 +47,7 @@ var UserPluginDoRIS = (function(superClass) {
 		saveData.user.custom_data.doris_username = this._user.data.user.custom_data.doris_username;
         saveData.user.custom_data.doris_password = this._user.data.user.custom_data.doris_password;
 		saveData.user.custom_data.doris_organization_unit = this._user.data.user.custom_data.doris_organization_unit;
+		saveData.user.custom_data.doris_permission_group = this._user.data.user.custom_data.doris_permission_group;
     }
 
 	Plugin.isAllowed = function() {

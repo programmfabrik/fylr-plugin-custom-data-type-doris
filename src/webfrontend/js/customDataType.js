@@ -19,7 +19,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
     };
 
     Plugin.isEmpty = function(data, top_level_data, opts={}) {
-        if (opts.mode == 'expert') {
+        if (opts.mode === 'expert') {
             return CUI.util.isEmpty(data[this.name()]?.trim());
         } else {
             return !data[this.name()]?.id;
@@ -127,7 +127,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
         const container = CUI.dom.div();
 
         CUI.dom.append(container, new CUI.Label({ text: this.__getDocumentLabel(cdata) }));
-        if (this.__hasLoginData(dorisConfiguration)) {
+        if (this.__hasSufficientRights(cdata.fileType, dorisConfiguration)) {
             CUI.dom.append(container, this.__getDetailInfoIconButton(cdata, dorisConfiguration));
         }
 
@@ -166,18 +166,19 @@ var CustomDataTypeDoRIS = (function(superClass) {
 
     Plugin.__getCreateDocumentButton = function(data, cdata, layoutElement, dorisConfiguration) {
         if (this.__isValidData(cdata)) return undefined;
+
+        const types = this.__getAvailableTypes(dorisConfiguration);
         
         return new CUI.Button({
             text: '',
             icon: new CUI.Icon({ class: 'fa-plus' }),
             class: 'pluginDirectSelectEditSearchFylr create-document-button',
-            disabled: !this.__hasLoginData(dorisConfiguration),
-            onClick: () => this.__openCreateDocumentModal(data, cdata, layoutElement, dorisConfiguration)
+            disabled: !dorisConfiguration || !types.length,
+            onClick: () => this.__openCreateDocumentModal(data, cdata, layoutElement, dorisConfiguration, types)
         });
     };
 
-    Plugin.__openCreateDocumentModal = function(data, cdata, layoutElement, dorisConfiguration) {
-        const types = this.__getBaseConfiguration().types;
+    Plugin.__openCreateDocumentModal = function(data, cdata, layoutElement, dorisConfiguration, types) {
         const inputData = { type: types[0].id };
 
         const modal = new CUI.Modal({
@@ -397,7 +398,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
             class: 'pluginDirectSelectEditInput',
             undo_and_changed_support: false,
             content_size: false,
-            disabled: !this.__hasLoginData(dorisConfiguration),
+            disabled: !dorisConfiguration,
             onKeyup: input => {
                 this.__triggerSuggestionsUpdate(
                     suggestionsMenu, loadingIcon, input.getValueForInput(), data, cdata, layoutElement, dorisConfiguration
@@ -467,13 +468,15 @@ var CustomDataTypeDoRIS = (function(superClass) {
         
         return this.__getDoRISQueryResult(query, ['ROWNUMBER', 'TYP', 'AKTENTYP'], dorisConfiguration).then(data => {
             return data
-                ? data.map(documentValues => {
-                    return {
-                        id: documentValues[0],
-                        type: documentValues[1],
-                        fileType: documentValues[2]
-                    };
-                }) : [];
+                ? data.filter(documentValues => this.__hasSufficientRights(documentValues[2], dorisConfiguration))
+                    .map(documentValues => {
+                        return {
+                            id: documentValues[0],
+                            type: documentValues[1],
+                            fileType: documentValues[2]
+                        };
+                    })
+                : [];
         });
     };
 
@@ -570,9 +573,15 @@ var CustomDataTypeDoRIS = (function(superClass) {
     };
 
     Plugin.__openActionsMenu = function(cdata, menuElement, dorisConfiguration) {
-        const disabled = !this.__isValidData(cdata) || !this.__hasLoginData(dorisConfiguration);
+        const invalid = !this.__isValidData(cdata);
+        const forbidden = !dorisConfiguration || !this.__hasSufficientRights(cdata.fileType, dorisConfiguration);
+
         menuElement.getItemList().getItems().done(items => {
-            items.forEach(item => item.disabled = disabled);
+            items.forEach(item => {
+                item.disabled = item.value === 'delete'
+                    ? invalid
+                    : invalid || forbidden;
+            });
             menuElement.show();
         });
     };
@@ -628,13 +637,12 @@ var CustomDataTypeDoRIS = (function(superClass) {
     };
 
     Plugin.__getEditButton = function(cdata, dorisConfiguration) {
-        const editUrl = dorisConfiguration.url + 'cust/nld/DA/jsp/index.jsp?View=ListView&RowNumber=' + cdata.id;
-
         return {
             text: $$('custom.data.type.doris.buttonMenu.edit'),
             value: 'edit',
             icon_left: new CUI.Icon({ class: 'fa-pencil' }),
             onClick: () => {
+                const editUrl = dorisConfiguration.url + 'cust/nld/DA/jsp/index.jsp?View=ListView&RowNumber=' + cdata.id;
                 window.open(editUrl, '_blank');
             }
         };
@@ -734,47 +742,53 @@ var CustomDataTypeDoRIS = (function(superClass) {
     };
 
     Plugin.__getDoRISQueryResult = function(query, fieldNames, dorisConfiguration) {
-        const params = new URLSearchParams({
-            username: dorisConfiguration.username,
-            password: dorisConfiguration.password,
-            query,
-            startIndex: 0,
-            endIndex: 9
+        return dorisConfiguration.credentialsPromise.then(credentials => {
+            const params = new URLSearchParams({
+                username: credentials.username,
+                password: credentials.password,
+                query,
+                startIndex: 0,
+                endIndex: 9
+            });
+
+            fieldNames.forEach(fieldName => params.append('fieldNames[]', fieldName));
+
+            const url = dorisConfiguration.url + 'services/rest/getQueryResult?' + params.toString();
+
+            return this.__performGetRequest(url);
         });
-
-        fieldNames.forEach(fieldName => params.append('fieldNames[]', fieldName));
-
-        const url = dorisConfiguration.url + 'services/rest/getQueryResult?' + params.toString();
-
-        return this.__performGetRequest(url);
     };
 
     Plugin.__modifyViaDoRISQuery = function(query, fieldNames, fieldValues, dorisConfiguration) {
-        const requestData = {
-            username: dorisConfiguration.username,
-            password: dorisConfiguration.password,
-            query,
-            fieldNames,
-            fieldValues
-        };
+        return dorisConfiguration.credentialsPromise.then(credentials => {
+            const requestData = {
+                username: credentials.username,
+                password: credentials.password,
+                query,
+                fieldNames,
+                fieldValues
+            };
 
-        return this.__performPostRequest(dorisConfiguration.url + 'services/rest/modify', requestData);
+            return this.__performPostRequest(dorisConfiguration.url + 'services/rest/modify', requestData);
+        });
     };
 
     Plugin.__getDoRISDocument = function(query, dorisConfiguration) {
-        const fieldNames = ['ROWNUMBER', 'GZ2', 'AKTEINH', 'AENDAM', 'AENDUM'];
+        return dorisConfiguration.credentialsPromise.then(credentials => {
+            const fieldNames = ['ROWNUMBER', 'GZ2', 'AKTEINH', 'AENDAM', 'AENDUM'];
 
-        const params = new URLSearchParams({
-            username: dorisConfiguration.username,
-            password: dorisConfiguration.password,
-            query
-        });
+            const params = new URLSearchParams({
+                username: credentials.username,
+                password: credentials.password,
+                query
+            });
 
-        fieldNames.forEach(fieldName => params.append('fieldNames[]', fieldName));
+            fieldNames.forEach(fieldName => params.append('fieldNames[]', fieldName));
 
-        const url = dorisConfiguration.url + 'services/rest/getDocument?' + params.toString();
-        
-        return this.__performGetRequest(url).then(documentValues => {
+            const url = dorisConfiguration.url + 'services/rest/getDocument?' + params.toString();
+            
+            return this.__performGetRequest(url);
+        }).then(documentValues => {
             if (!documentValues) return undefined;
 
             return {
@@ -813,14 +827,16 @@ var CustomDataTypeDoRIS = (function(superClass) {
             ACCESS: documentData.type.access
         };
 
-        const requestData = {
-            username: dorisConfiguration.username,
-            password: dorisConfiguration.password,
-            fieldNames: Object.keys(fields),
-            fieldValues: Object.values(fields)
-        };
-        
-        return this.__performPostRequest(dorisConfiguration.url + 'services/rest/addNew', requestData);
+        return dorisConfiguration.credentialsPromise.then(credentials => {
+            const requestData = {
+                username: credentials.username,
+                password: credentials.password,
+                fieldNames: Object.keys(fields),
+                fieldValues: Object.values(fields)
+            };
+            
+            return this.__performPostRequest(dorisConfiguration.url + 'services/rest/addNew', requestData);
+        });
     };
 
     Plugin.__getOrganizationUnit = function(documentData, dorisConfiguration) {
@@ -830,6 +846,21 @@ var CustomDataTypeDoRIS = (function(superClass) {
     };
 
     Plugin.__performGetRequest = function(url) {
+        if (!this.timeoutLength) this.timeoutLength = 1000;
+        console.log('Get request:')
+        console.log('URL:', url);
+        if (url.includes('getDocument')) {
+            return Promise.resolve(['1234567', 'AZ-777', 'Inhalt', '12.03.2024', '12:04']);
+        } else if (url.includes('ROWNUMBER')) {
+            const number = this.timeoutLength;
+            return new Promise((resolve, reject) => {
+                setTimeout(() => resolve([[number.toString(), 'Akte', 'Geheimakte'], ['1234567', 'Akte', 'Andere Akte'], ['2345677', 'Vorgang']]), this.timeoutLength);
+                this.timeoutLength -= 4000;
+                if (this.timeoutLength < 1000) this.timeoutLength = 1000;
+            });
+        } else {
+            return Promise.resolve([['20']]);
+        }
         return fetch(url, {
             method: 'GET',
         }).then(response => {
@@ -847,6 +878,10 @@ var CustomDataTypeDoRIS = (function(superClass) {
     };
 
     Plugin.__performPostRequest = function(url, requestData) {
+        console.log('Post request:')
+        console.log('URL:', url);
+        console.log('requestData:', requestData);
+        return Promise.resolve({ success: 'ok' });
         return fetch(url, {
             method: 'POST',
             headers: {
@@ -867,27 +902,54 @@ var CustomDataTypeDoRIS = (function(superClass) {
 
     Plugin.__getDoRISConfiguration = function() {
         const userConfiguration = ez5.session.user.opts.user.user;
-        const dorisPluginConfiguration = userConfiguration.custom_data;
+        const dorisUserConfiguration = userConfiguration.custom_data;
+        if (!dorisUserConfiguration.doris_permission_group?.length) return undefined;
+        
         const baseConfiguration = this.__getBaseConfiguration();
-
         let url = baseConfiguration.url;
         if (!url.endsWith('/')) url += '/';
 
         return {
-            username: dorisPluginConfiguration.doris_username,
-            password: dorisPluginConfiguration.doris_password,
-            organizationUnit: dorisPluginConfiguration.doris_organization_unit,
+            credentialsPromise: this.__getDoRISCredentials(),
+            permissionGroup: dorisUserConfiguration.doris_permission_group,
+            organizationUnit: dorisUserConfiguration.doris_organization_unit,
             fullName: userConfiguration.first_name + ' ' + userConfiguration.last_name,
             url
-        }
+        };
+    };
+
+    Plugin.__getDoRISCredentials = function() {
+        const url = ez5.session.data.instance.external_url
+            + '/api/v1/plugin/extension/custom-data-type-doris/credentials?access_token='
+            + ez5.session.data.access_token;
+
+        return fetch(url, {
+            method: 'GET',
+        }).then(response => {
+            if (!response.ok) console.error(response.status);
+            return response.json();
+        }).catch(err => {
+            console.error(err);
+            return undefined;
+        });
     };
 
     Plugin.__getBaseConfiguration = function() {
         return ez5.session.getBaseConfig('plugin', 'custom-data-type-doris')['doris'];
     };
 
-    Plugin.__hasLoginData = function(dorisConfiguration) {
-        return dorisConfiguration.username && dorisConfiguration.password;
+    Plugin.__getAvailableTypes = function(dorisConfiguration) {
+        return this.__getBaseConfiguration().types
+            .filter(type => this.__hasSufficientRights(type.name, dorisConfiguration));
+    };
+
+    Plugin.__hasSufficientRights = function(fileType, dorisConfiguration) {
+        if (!dorisConfiguration) return false;
+        if (dorisConfiguration.permissionGroup === 'full' || !fileType) return true;
+
+        return this.__getBaseConfiguration().types
+            .find(type => type.name === fileType)
+            ?.permission_group === 'basic';
     };
 
     Plugin.__showErrorMessage = function(errorId) {

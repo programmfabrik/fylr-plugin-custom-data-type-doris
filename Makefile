@@ -15,8 +15,10 @@ build: clean
 	cat src/webfrontend/js/userPlugin.js >> build/$(PLUGIN_NAME)/webfrontend/${PLUGIN_NAME}.js
 	cp src/webfrontend/css/main.css build/$(PLUGIN_NAME)/webfrontend/${PLUGIN_NAME}.css
 	cp src/server/extension/data.js build/$(PLUGIN_NAME)/server/extension/data.js
+	cp src/server/extension/credentials.js build/$(PLUGIN_NAME)/server/extension/credentials.js
 	cp l10n/$(PLUGIN_NAME).csv build/$(PLUGIN_NAME)/l10n/$(PLUGIN_NAME).csv
 
+	cp serverConfiguration.json build/$(PLUGIN_NAME)/serverConfiguration.json
 	cp manifest.master.yml build/$(PLUGIN_NAME)/manifest.yml
 
 clean:
