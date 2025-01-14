@@ -358,7 +358,7 @@ var CustomDataTypeDoRIS = (function(superClass) {
     Plugin.__getCurrentDate = function() {
         const date = new Date();
         return this.__addZeroIfNecessary(date.getDate()) + '.'
-            + this.__addZeroIfNecessary(date.getMonth()) + '.'
+            + this.__addZeroIfNecessary(date.getMonth() + 1) + '.'
             + date.getFullYear();
     };
 
