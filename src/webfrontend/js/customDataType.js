@@ -802,32 +802,32 @@ var CustomDataTypeDoRIS = (function(superClass) {
     };
 
     Plugin.__addDoRISDocument = function(documentData, dorisConfiguration, organizationUnit) {
-        const fields = {
-            GUID: documentData.guid,
-            AZ: documentData.type.id,
-            GZLFDNR: documentData.lfdNr,
-            GZAKTE: documentData.type.id + '-' + documentData.lfdNr,
-            GZJAHR: documentData.creationYear,
-            TYP: 'Akte',
-            AKTENTYP: documentData.type.name,
-            AKTEINH: documentData.content,
-            OE: organizationUnit,
-            AUSBLEND: 'N',
-            FORTSETZ: 'N',
-            NACHGJN: 'N',
-            TEMPLATE: 'DA',
-            LFDNR: '0',
-            PAPERJN: 'N',
-            ERSTNAME: dorisConfiguration.fullName,
-            ERSTAM: documentData.creationDate,
-            ERSTUM: documentData.creationTime,
-            AENDNAME: dorisConfiguration.fullName,
-            AENDAM: documentData.creationDate,
-            AENDUM: documentData.creationTime,
-            ACCESS: documentData.type.access
-        };
-
         return dorisConfiguration.credentialsPromise.then(credentials => {
+            const fields = {
+                GUID: documentData.guid,
+                AZ: documentData.type.id,
+                GZLFDNR: documentData.lfdNr,
+                GZAKTE: documentData.type.id + '-' + documentData.lfdNr,
+                GZJAHR: documentData.creationYear,
+                TYP: 'Akte',
+                AKTENTYP: documentData.type.name,
+                AKTEINH: documentData.content,
+                OE: organizationUnit,
+                AUSBLEND: 'N',
+                FORTSETZ: 'N',
+                NACHGJN: 'N',
+                TEMPLATE: 'DA',
+                LFDNR: '0',
+                PAPERJN: 'N',
+                ERSTNAME: credentials.username,
+                ERSTAM: documentData.creationDate,
+                ERSTUM: documentData.creationTime,
+                AENDNAME: credentials.username,
+                AENDAM: documentData.creationDate,
+                AENDUM: documentData.creationTime,
+                ACCESS: documentData.type.access
+            };
+
             const requestData = {
                 username: credentials.username,
                 password: credentials.password,
@@ -890,7 +890,6 @@ var CustomDataTypeDoRIS = (function(superClass) {
             credentialsPromise: this.__getDoRISCredentials(),
             permissionGroup: dorisUserConfiguration.doris_permission_group,
             organizationUnit: dorisUserConfiguration.doris_organization_unit,
-            fullName: userConfiguration.first_name + ' ' + userConfiguration.last_name,
             url
         };
     };
