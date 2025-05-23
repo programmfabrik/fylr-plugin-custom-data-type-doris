@@ -1,6 +1,7 @@
 plugin:
   name: custom-data-type-doris
   version: 0.1
+  url: https://github.com/programmfabrik/fylr-plugin-custom-data-type-doris
   displayname:
     de-DE: DoRIS
     en-US: DoRIS
