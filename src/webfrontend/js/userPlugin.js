@@ -44,8 +44,6 @@ var UserPluginDoRIS = (function(superClass) {
     }
 
 	Plugin.getSaveData = function(saveData) {
-		saveData.user.custom_data.doris_username = this._user.data.user.custom_data.doris_username;
-        saveData.user.custom_data.doris_password = this._user.data.user.custom_data.doris_password;
 		saveData.user.custom_data.doris_organization_unit = this._user.data.user.custom_data.doris_organization_unit;
 		saveData.user.custom_data.doris_permission_group = this._user.data.user.custom_data.doris_permission_group;
     }
