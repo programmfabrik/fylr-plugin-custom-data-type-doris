@@ -18,7 +18,6 @@ build: clean buildinfojson
 	cp src/server/extension/credentials.js build/$(PLUGIN_NAME)/server/extension/credentials.js
 	cp l10n/$(PLUGIN_NAME).csv build/$(PLUGIN_NAME)/l10n/$(PLUGIN_NAME).csv
 
-	cp serverConfiguration.json build/$(PLUGIN_NAME)/serverConfiguration.json
 	cp manifest.master.yml build/$(PLUGIN_NAME)/manifest.yml
 	cp build-info.json build/$(PLUGIN_NAME)/build-info.json
 
