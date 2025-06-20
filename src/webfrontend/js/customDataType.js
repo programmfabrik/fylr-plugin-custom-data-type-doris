@@ -82,6 +82,8 @@ var CustomDataTypeDoRIS = (function(superClass) {
                 _unnest: true,
                 _unset_filter: true
             };
+        } else if (data[key + ':has_value']) {
+            return this.getHasValueFilter(data, key);
         } else if (data[key]?.length) {
             return {
                 type: 'match',
@@ -92,13 +94,34 @@ var CustomDataTypeDoRIS = (function(superClass) {
         }
     }
 
+    Plugin.getHasValueFilter = function(data, key = this.name()) {
+        if (data[key + ':has_value']) {
+            return {
+                type: 'in',
+                bool: 'should',
+                fields: [this.path() + '.' + this.name() + '.id'],
+                in: [null],
+                bool: 'must_not',
+                _unnest: true,
+                _unset_filter: true
+            };
+        }
+    }
+
     Plugin.getQueryFieldBadge = function(data) {
-        return {
-            name: this.nameLocalized(),
-            value: data[this.name()]?.length
-                ? data[this.name()]
-                : $$('custom.data.type.doris.search.badge.without')
+        const result = {
+            name: this.nameLocalized()
         };
+
+        if (data[this.name() + ':unset']) {
+            result.value = $$('text.column.badge.without');
+        } else if (data[this.name() + ':has_value']) {
+            result.value = $$('field.search.badge.has_value');
+        } else {
+            result.value = data[this.name()];
+        }
+
+        return result;
     }
 
     Plugin.getSaveData = function(data, save_data, opts = {}) {
