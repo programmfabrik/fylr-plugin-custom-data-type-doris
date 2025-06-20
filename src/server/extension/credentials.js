@@ -1,5 +1,3 @@
-const serverConfiguration = require('../../serverConfiguration.json');
-
 const info = process.argv.length >= 3
     ? JSON.parse(process.argv[2])
     : {};
@@ -23,10 +21,24 @@ process.stdin.on('end', async () => {
 async function handleRequest() {
     const userConfiguration = await getUserConfiguration();
     const permissionGroup = userConfiguration?.user?.custom_data?.doris_permission_group;
+    return getCredentials(permissionGroup);
+}
 
-    return permissionGroup
-        ? serverConfiguration.dorisCredentials[permissionGroup] ?? {}
-        : {};
+function getCredentials(permissionGroup) {
+    const configuration = getPluginConfiguration();
+    if (permissionGroup === 'basic') {
+        return {
+            username: configuration.doris_account_basic_username,
+            password: configuration.doris_account_basic_password
+        };
+    } else if (permissionGroup === 'full') {
+        return {
+            username: configuration.doris_account_full_username,
+            password: configuration.doris_account_full_password
+        };
+    } else {
+        return {};
+    }
 }
 
 async function getUserConfiguration() {
@@ -47,6 +59,9 @@ async function getUserConfiguration() {
     }
 }
 
+function getPluginConfiguration() {
+    return info.config.plugin['custom-data-type-doris'].config.doris;
+}
 
 function throwError(error, description) {
     console.log(JSON.stringify({

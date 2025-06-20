@@ -26,11 +26,7 @@ custom.data.type.doris.error.dorisUpdateFailure.message,Die Akte konnte in DoRIS
 custom.data.type.doris.error.dorisReadNewDocumentFailure.title,Aktenerstellung fehlgeschlagen,Could not create document
 custom.data.type.doris.error.dorisReadNewDocumentFailure.message,Die in DoRIS neu angelegte Akte konnte nicht gelesen werden.,The document newly created in DoRIS could not be read.
 custom.data.type.doris.edit.invalidEntry,Ungültiger Eintrag,Invalid entry
-custom.data.type.do.ris.config.parameter.mask.value.value.label,Nicht ausfüllen,Do not fill in
-userPlugin.doris.username.label,Username,User name
-userPlugin.doris.username.hint,Der Username des DoRIS-Accounts,The user name of the DoRIS account
-userPlugin.doris.password.label,Passwort,Password
-userPlugin.doris.password.hint,Das Passwort des DoRIS-Accounts,The password of the DoRIS account
+custom.data.type.doris.config.parameter.mask.value.value.label,Nicht ausfüllen,Do not fill in
 userPlugin.doris.permissionGroup.label,Berechtigungsgruppe,Permission group
 userPlugin.doris.permissionGroup.none,Keine Berechtigungen,No permissions
 userPlugin.doris.permissionGroup.basic,Eingeschränkte Berechtigungen,Basic permissions
@@ -39,6 +35,10 @@ userPlugin.doris.organizationUnit.label,Organisationseinheit,Organization unit
 userPlugin.doris.organizationUnit.hint,"Die Organisationseinheit, die bei neu angelegten DoRIS-Akten gesetzt wird, wenn für den gewählten Aktentyp keine Organisationseinheit festgelegt ist","The organization unit that will be set for newly created DoRIS documents in case no organization unit is defined for the chosen document type"
 server.config.name.system.doris,DoRIS,DoRIS
 server.config.parameter.system.doris.url.label,URL,URL
+server.config.parameter.system.doris.doris_account_basic_username.label,Account mit eingeschränkten Berechtigungen: Username,Account with restricted permissions: User name
+server.config.parameter.system.doris.doris_account_basic_password.label,Account mit eingeschränkten Berechtigungen: Passwort,Account with restricted permissions: Password
+server.config.parameter.system.doris.doris_account_full_username.label,Account mit vollen Berechtigungen: Username,Account with full permissions: User name
+server.config.parameter.system.doris.doris_account_full_password.label,Account mit vollen Berechtigungen: Passwort,Account with full permissions: Password
 server.config.parameter.system.doris.types.label,Typen,Types
 server.config.parameter.system.doris.types.id.label,ID,ID
 server.config.parameter.system.doris.types.label.label,Anzeigename in der Auswahlliste,Display name in selection list

@@ -38,6 +38,18 @@ base_config:
       url:
         type: text
         position: 0
+      doris_account_basic_username:
+        type: secret
+        position: 1
+      doris_account_basic_password:
+        type: secret
+        position: 2
+      doris_account_full_username:
+        type: secret
+        position: 3
+      doris_account_full_password:
+        type: secret
+        position: 4
       types:
         type: table
         fields:
@@ -60,14 +72,14 @@ base_config:
             type: select
             options: ["basic", "full"]
             position: 5
-        position: 1
+        position: 5
       api_fields:
         type: table
         fields:
           - name: path
             type: text
             position: 0
-        position: 2
+        position: 6
 
 extensions:
   data:
