@@ -50,6 +50,9 @@ base_config:
       doris_account_full_password:
         type: secret
         position: 4
+      allow_creation:
+        type: bool
+        position: 5
       types:
         type: table
         fields:
@@ -72,14 +75,14 @@ base_config:
             type: select
             options: ["basic", "full"]
             position: 5
-        position: 5
+        position: 6
       api_fields:
         type: table
         fields:
           - name: path
             type: text
             position: 0
-        position: 6
+        position: 7
 
 extensions:
   data:

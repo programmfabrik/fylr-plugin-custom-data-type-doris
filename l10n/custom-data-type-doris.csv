@@ -45,6 +45,8 @@ server.config.parameter.system.doris.types.name.label,Bezeichnung in DoRIS,Name 
 server.config.parameter.system.doris.types.organization_unit.label,Organisationseinheit,Organization unit
 server.config.parameter.system.doris.types.access.label,Access-Code,Access code
 server.config.parameter.system.doris.types.permission_group.label,Berechtigungsgruppe,Permission group
+server.config.parameter.system.doris.allow_creation.label,Anlegen neuer Akten,Creation of new documents
+server.config.parameter.system.doris.allow_creation.checkbox,Erlauben,Allow
 server.config.parameter.system.doris.api_fields.label,Vom API-Endpunkt berücksichtigte Felder (inkl. Objekttyp und Pfad),Fields considered by API endpoint (including object type and path)
 server.config.option.system.doris.permission_group.basic,Eingeschränkte Berechtigungen,Basic permissions
 server.config.option.system.doris.permission_group.full,Volle Berechtigungen,Full permissions

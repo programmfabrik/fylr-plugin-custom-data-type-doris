@@ -182,7 +182,9 @@ var CustomDataTypeDoRIS = (function(superClass) {
     };
 
     Plugin.__updateEditorInput = function(data, cdata, layoutElement, dorisConfiguration) {
-        layoutElement.replace(this.__getCreateDocumentButton(data, cdata, layoutElement, dorisConfiguration), 'left');
+        if (this.__getBaseConfiguration().allow_creation) {
+            layoutElement.replace(this.__getCreateDocumentButton(data, cdata, layoutElement, dorisConfiguration), 'left');
+        }
         layoutElement.replace(this.__getContentElement(data, cdata, layoutElement, dorisConfiguration), 'center');
         layoutElement.replace(this.__renderActionsButtonBar(data, cdata, layoutElement, dorisConfiguration), 'right');
     };
