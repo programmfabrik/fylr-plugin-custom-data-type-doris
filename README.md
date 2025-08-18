@@ -7,3 +7,9 @@ developers.
 # DoRIS Fylr plugin
 
 This plugin adds the new data type "DoRIS" to a Fylr instance, enabling communication between Fylr and the [DoRIS DMS](https://doris-dms.de).
+
+## Installation
+
+The latest version of this plugin can be found [here](https://github.com/programmfabrik/fylr-plugin-custom-data-type-doris/releases/latest/download/CustomDataTypeDoRIS.zip).
+
+The ZIP can be downloaded and installed using the plugin manager, or used directly (recommended).
