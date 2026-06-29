@@ -29,8 +29,10 @@ custom_types:
     mapping:
       id:
         type: text
+        skipTerms: true
       gzAkte:
         type: text
+        skipTerms: true
 
 base_config:
   - name: doris
