@@ -1,0 +1,22 @@
+server:
+  install:
+  - l10n/custom-data-type-doris.csv
+  bundles:
+    - out: server/extension/credentials.js
+      sources:
+      - src/server/extension/credentials.js
+    - out: server/extension/data.js
+      sources:
+      - src/server/extension/data.js
+webfrontend:
+  bundles:
+    - out: webfrontend/custom-data-type-doris.js
+      sources:
+      - src/webfrontend/js/customDataType.js
+      - src/webfrontend/js/userPlugin.js
+    - out: webfrontend/custom-data-type-doris.css
+      sources:
+      - src/webfrontend/css/main.css
+
+zip_aliases:
+- CustomDataTypeDoRIS.zip
